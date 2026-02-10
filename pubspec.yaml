@@ -1,0 +1,63 @@
+name: luxefinds_client
+description: LuxeFinds Mobile Client App - Premium e-commerce platform for luxury accessories.
+
+publish_to: 'none'
+
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  flutter_riverpod: ^2.4.0
+  riverpod_annotation: ^2.3.0
+  
+  # HTTP Client
+  dio: ^5.3.1
+  
+  # Secure Storage
+  flutter_secure_storage: ^9.0.0
+  
+  # Navigation
+  go_router: ^13.0.0
+  
+  # UI & Forms
+  flutter_form_builder: ^9.1.0
+  form_builder_validators: ^10.0.0
+  cached_network_image: ^3.3.0
+  shimmer: ^3.0.0
+  intl: ^0.19.0
+  
+  # Utilities
+  freezed_annotation: ^2.4.1
+  json_serializable: ^6.7.1
+  json_annotation: ^4.8.1
+  logger: ^2.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  
+  flutter_lints: ^3.0.0
+  build_runner: ^2.4.6
+  riverpod_generator: ^2.3.0
+  freezed: ^2.4.1
+  json_serializable: ^6.7.1
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icons/
+  
+  fonts:
+    - family: Alegreya
+      fonts:
+        - asset: assets/fonts/Alegreya-Regular.ttf
+        - asset: assets/fonts/Alegreya-Bold.ttf
+          weight: 700
