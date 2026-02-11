@@ -1,0 +1,307 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../config/theme.dart';
+import '../../services/product_service.dart';
+
+class ProductFormScreen extends ConsumerStatefulWidget {
+  final String? productId;
+  const ProductFormScreen({Key? key, this.productId}) : super(key: key);
+
+  @override
+  ConsumerState<ProductFormScreen> createState() => _ProductFormScreenState();
+}
+
+class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _priceController = TextEditingController();
+  final _stockController = TextEditingController();
+  final _imageController = TextEditingController();
+  final _materialsController = TextEditingController();
+  final _careController = TextEditingController();
+  String? _selectedCategoryId;
+  bool _featured = false;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.productId != null) {
+      _loadProduct();
+    }
+  }
+
+  Future<void> _loadProduct() async {
+    try {
+      setState(() => _isLoading = true);
+      final product = await ref
+          .read(productServiceProvider)
+          .getProduct(widget.productId!);
+
+      _nameController.text = product.name;
+      _descriptionController.text = product.description;
+      _priceController.text = product.price.toString();
+      _stockController.text = product.stock.toString();
+      _imageController.text = product.image;
+      _materialsController.text = product.category.name;
+      _careController.text = '';
+      _selectedCategoryId = product.categoryId;
+      _featured = product.featured;
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleSubmit() async {
+    if (_formKey.currentState!.validate() && _selectedCategoryId != null) {
+      try {
+        setState(() => _isLoading = true);
+
+        if (widget.productId == null) {
+          // Create
+          await ref.read(productServiceProvider).createProduct(
+            name: _nameController.text,
+            description: _descriptionController.text,
+            categoryId: _selectedCategoryId!,
+            price: double.parse(_priceController.text),
+            stock: int.parse(_stockController.text),
+            image: _imageController.text,
+            materials: _materialsController.text,
+            care: _careController.text,
+            featured: _featured,
+          );
+        } else {
+          // Update
+          await ref.read(productServiceProvider).updateProduct(
+            id: widget.productId!,
+            name: _nameController.text,
+            description: _descriptionController.text,
+            categoryId: _selectedCategoryId,
+            price: double.parse(_priceController.text),
+            stock: int.parse(_stockController.text),
+            image: _imageController.text,
+            materials: _materialsController.text,
+            care: _careController.text,
+            featured: _featured,
+          );
+        }
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(widget.productId == null
+                  ? 'Product created successfully'
+                  : 'Product updated successfully'),
+              backgroundColor: AppTheme.successColor,
+            ),
+          );
+          context.go('/products');
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: AppTheme.errorColor,
+            ),
+          );
+        }
+      } finally {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    _priceController.dispose();
+    _stockController.dispose();
+    _imageController.dispose();
+    _materialsController.dispose();
+    _careController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.productId == null ? 'New Product' : 'Edit Product'),
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Product Name',
+                  hintText: 'Enter product name',
+                ),
+                validator: (value) {
+                  if (value?.isEmpty ?? true) {
+                    return 'Product name is required';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  hintText: 'Enter product description',
+                ),
+                maxLines: 3,
+                validator: (value) {
+                  if (value?.isEmpty ?? true) {
+                    return 'Description is required';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _priceController,
+                      decoration: const InputDecoration(
+                        labelText: 'Price',
+                        hintText: '0.00',
+                        prefixText: '\$ ',
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'Price is required';
+                        }
+                        if (double.tryParse(value!) == null) {
+                          return 'Invalid price';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _stockController,
+                      decoration: const InputDecoration(
+                        labelText: 'Stock',
+                        hintText: '0',
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'Stock is required';
+                        }
+                        if (int.tryParse(value!) == null) {
+                          return 'Invalid stock';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _imageController,
+                decoration: const InputDecoration(
+                  labelText: 'Image URL',
+                  hintText: 'Enter image URL',
+                ),
+                validator: (value) {
+                  if (value?.isEmpty ?? true) {
+                    return 'Image URL is required';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedCategoryId,
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'cat1', child: Text('Bags')),
+                  DropdownMenuItem(value: 'cat2', child: Text('Accessories')),
+                  DropdownMenuItem(value: 'cat3', child: Text('Shoes')),
+                ],
+                onChanged: (value) {
+                  setState(() => _selectedCategoryId = value);
+                },
+                validator: (value) {
+                  if (value == null) {
+                    return 'Category is required';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _materialsController,
+                decoration: const InputDecoration(
+                  labelText: 'Materials',
+                  hintText: 'Enter materials info',
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _careController,
+                decoration: const InputDecoration(
+                  labelText: 'Care Instructions',
+                  hintText: 'Enter care instructions',
+                ),
+              ),
+              const SizedBox(height: 16),
+              CheckboxListTile(
+                title: const Text('Featured Product'),
+                value: _featured,
+                onChanged: (value) {
+                  setState(() => _featured = value ?? false);
+                },
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _isLoading ? null : _handleSubmit,
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppTheme.backgroundColor,
+                          ),
+                        ),
+                      )
+                    : Text(widget.productId == null ? 'Create' : 'Update'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
