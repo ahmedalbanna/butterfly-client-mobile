@@ -249,6 +249,8 @@ class AdminProduct {
   final bool featured;
   final String categoryId;
   final AdminCategory category;
+  final String? materials;
+  final String? care;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -262,6 +264,8 @@ class AdminProduct {
     required this.featured,
     required this.categoryId,
     required this.category,
+    this.materials,
+    this.care,
     this.createdAt,
     this.updatedAt,
   });
@@ -277,6 +281,8 @@ class AdminProduct {
       featured: json['featured'] ?? false,
       categoryId: json['categoryId'],
       category: AdminCategory.fromJson(json['category']),
+      materials: json['materials'] as String?,
+      care: json['care'] as String?,
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
           : null,

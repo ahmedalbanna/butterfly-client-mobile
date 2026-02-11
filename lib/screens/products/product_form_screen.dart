@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../services/product_service.dart';
+import '../../services/category_service.dart';
 
 class ProductFormScreen extends ConsumerStatefulWidget {
   final String? productId;
@@ -45,8 +46,8 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       _priceController.text = product.price.toString();
       _stockController.text = product.stock.toString();
       _imageController.text = product.image;
-      _materialsController.text = product.category.name;
-      _careController.text = '';
+      _materialsController.text = product.materials ?? '';
+      _careController.text = product.care ?? '';
       _selectedCategoryId = product.categoryId;
       _featured = product.featured;
     } catch (e) {
@@ -237,24 +238,97 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _selectedCategoryId,
-                decoration: const InputDecoration(
-                  labelText: 'Category',
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'cat1', child: Text('Bags')),
-                  DropdownMenuItem(value: 'cat2', child: Text('Accessories')),
-                  DropdownMenuItem(value: 'cat3', child: Text('Shoes')),
-                ],
-                onChanged: (value) {
-                  setState(() => _selectedCategoryId = value);
-                },
-                validator: (value) {
-                  if (value == null) {
-                    return 'Category is required';
-                  }
-                  return null;
+              // Dynamic category dropdown
+              Consumer(
+                builder: (context, ref, child) {
+                  final categoriesAsync = ref.watch(categoriesProvider);
+
+                  return categoriesAsync.when(
+                    data: (categories) {
+                      if (categories.isEmpty) {
+                        return Card(
+                          color: AppTheme.errorColor.withOpacity(0.1),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.warning,
+                                  color: AppTheme.errorColor,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'No categories available. Please create categories first.',
+                                    style: TextStyle(
+                                      color: AppTheme.errorColor,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      return DropdownButtonFormField<String>(
+                        value: _selectedCategoryId,
+                        decoration: const InputDecoration(
+                          labelText: 'Category',
+                        ),
+                        items: categories.map((category) {
+                          return DropdownMenuItem<String>(
+                            value: category.id,
+                            child: Text(category.name),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() => _selectedCategoryId = value);
+                        },
+                        validator: (value) {
+                          if (value == null) {
+                            return 'Category is required';
+                          }
+                          return null;
+                        },
+                      );
+                    },
+                    loading: () => DropdownButtonFormField<String>(
+                      value: _selectedCategoryId,
+                      decoration: const InputDecoration(
+                        labelText: 'Category',
+                        helperText: 'Loading categories...',
+                      ),
+                      items: const [],
+                      onChanged: null,
+                    ),
+                    error: (error, stack) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DropdownButtonFormField<String>(
+                          value: null,
+                          decoration: InputDecoration(
+                            labelText: 'Category',
+                            errorText: 'Failed to load categories',
+                            helperText: error.toString(),
+                          ),
+                          items: const [],
+                          onChanged: null,
+                        ),
+                        const SizedBox(height: 8),
+                        ElevatedButton.icon(
+                          onPressed: () => ref.invalidate(categoriesProvider),
+                          icon: const Icon(Icons.refresh, size: 16),
+                          label: const Text('Retry'),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(0, 36),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 16),

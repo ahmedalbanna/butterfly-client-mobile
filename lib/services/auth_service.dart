@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
-import '../config/app_config.dart';
 import 'http_client.dart';
 
 final httpClientProvider = Provider((ref) => HttpClient());

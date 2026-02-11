@@ -52,3 +52,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   
+  # Fonts
+  fonts:
+    - family: Alegreya
+      fonts:
+        - asset: assets/fonts/Alegreya-Regular.ttf
+        - asset: assets/fonts/Alegreya-Bold.ttf
+          weight: 700
+  
