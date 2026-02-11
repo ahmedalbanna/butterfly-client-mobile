@@ -8,6 +8,8 @@ import '../screens/products/product_form_screen.dart';
 import '../screens/orders/orders_screen.dart';
 import '../screens/orders/order_detail_screen.dart' show OrderDetailScreenWidget;
 import '../screens/categories/categories_screen.dart';
+import '../screens/users/users_screen.dart';
+import '../screens/users/user_detail_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -83,6 +85,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/categories',
         name: 'categories',
         builder: (context, state) => const CategoriesScreen(),
+      ),
+      GoRoute(
+        path: '/users',
+        name: 'users',
+        builder: (context, state) => const UsersScreen(),
+      ),
+      GoRoute(
+        path: '/users/:id',
+        name: 'user_detail',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return UserDetailScreen(userId: id);
+        },
       ),
     ],
   );

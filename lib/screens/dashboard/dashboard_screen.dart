@@ -262,14 +262,10 @@ class DashboardScreen extends ConsumerWidget {
                     onTap: () => context.push('/categories'),
                   ),
                   DashboardCard(
-                    title: 'Settings',
-                    icon: Icons.settings_outlined,
-                    description: 'App settings',
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Settings coming soon')),
-                      );
-                    },
+                    title: 'Users',
+                    icon: Icons.people_outlined,
+                    description: 'Manage users',
+                    onTap: () => context.push('/users'),
                   ),
                 ],
               ),
