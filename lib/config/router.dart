@@ -10,6 +10,7 @@ import '../screens/orders/order_detail_screen.dart' show OrderDetailScreenWidget
 import '../screens/categories/categories_screen.dart';
 import '../screens/users/users_screen.dart';
 import '../screens/users/user_detail_screen.dart';
+import '../screens/settings/biometric_settings_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -44,6 +45,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/login',
         name: 'login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/biometric-settings',
+        name: 'biometric_settings',
+        builder: (context, state) => const BiometricSettingsScreen(),
       ),
       GoRoute(
         path: '/dashboard',

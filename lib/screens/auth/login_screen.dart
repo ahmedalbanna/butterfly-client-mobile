@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../services/auth_service.dart';
+import '../../providers/biometric_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -48,9 +49,65 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _handleBiometricLogin() async {
+    try {
+      // Authenticate with biometrics first
+      final authenticated = await ref.read(biometricProvider.notifier).authenticate(
+        customReason: 'Authenticate to login to LuxeFinds Admin',
+      );
+
+      if (!authenticated) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Biometric authentication failed'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Get stored credentials
+      final credentials = await ref.read(biometricProvider.notifier).getStoredCredentials();
+
+      if (credentials == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No stored credentials found'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Login with stored credentials
+      await ref.read(authStateProvider.notifier).loginWithBiometric(
+        email: credentials['email']!,
+        password: credentials['password']!,
+      );
+
+      if (mounted) {
+        context.go('/dashboard');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
+    final biometricState = ref.watch(biometricProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -141,6 +198,59 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 )
                     : const Text('Sign In'),
               ),
+              
+              // Biometric login option
+              if (biometricState.canUseBiometric) ...[
+                const SizedBox(height: 16),
+                const Row(
+                  children: [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('OR', style: TextStyle(color: Colors.grey)),
+                    ),
+                    Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: authState.isLoading ? null : _handleBiometricLogin,
+                  icon: Icon(
+                    biometricState.availableTypes.contains(BiometricType.face)
+                        ? Icons.face
+                        : Icons.fingerprint,
+                  ),
+                  label: Text('Login with ${biometricState.biometricTypeName}'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (biometricState.storedEmail != null)
+                  Text(
+                    'Logged in as: ${biometricState.storedEmail}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+              ],
+              
+              const SizedBox(height: 24),
+              
+              // Biometric settings link
+              TextButton.icon(
+                onPressed: () {
+                  context.push('/biometric-settings');
+                },
+                icon: const Icon(Icons.settings),
+                label: Text(
+                  biometricState.isEnabled
+                      ? 'Manage Biometric Login'
+                      : 'Enable Biometric Login',
+                ),
+              ),
             ],
           ),
         ),
@@ -148,3 +258,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 }
+
+// Import for BiometricType
+import 'package:local_auth/local_auth.dart';

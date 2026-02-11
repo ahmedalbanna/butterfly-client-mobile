@@ -104,6 +104,25 @@ class AuthService {
     }
   }
 
+  /// Login with biometric (uses stored credentials)
+  Future<User> loginWithBiometric({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      _logger.i('Admin logging in with biometric: $email');
+
+      // Use the same login flow as regular login
+      return await login(email: email, password: password);
+    } catch (e) {
+      _logger.e('Biometric login error: $e');
+      if (e is AuthException) {
+        rethrow;
+      }
+      throw AuthException(e.toString());
+    }
+  }
+
   /// Logout
   Future<void> logout() async {
     try {
@@ -215,6 +234,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final user = await _authService.login(
+        email: email,
+        password: password,
+      );
+      state = AuthState(user: user);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> loginWithBiometric({
+    required String email,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final user = await _authService.loginWithBiometric(
         email: email,
         password: password,
       );
