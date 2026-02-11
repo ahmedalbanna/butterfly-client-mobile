@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../services/auth_service.dart';
+import '../../services/analytics_service.dart';
+import 'widgets/stat_card.dart';
+import 'widgets/recent_orders_widget.dart';
+import 'widgets/low_stock_widget.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -10,12 +14,20 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
+    final analyticsAsync = ref.watch(analyticsProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              ref.invalidate(analyticsProvider);
+            },
+            tooltip: 'Refresh analytics',
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
@@ -35,91 +47,193 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Welcome, ${authState.user?.name ?? 'Admin'}',
-              style: Theme.of(context).textTheme.displaySmall,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Manage your LuxeFinds store',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppTheme.textSecondaryColor,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(analyticsProvider);
+          await Future.delayed(const Duration(milliseconds: 500));
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Welcome, ${authState.user?.name ?? 'Admin'}',
+                style: Theme.of(context).textTheme.displaySmall,
               ),
-            ),
-            const SizedBox(height: 32),
-            Text(
-              'Quick Actions',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 16),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              children: [
-                DashboardCard(
-                  title: 'Products',
-                  icon: Icons.shopping_bag_outlined,
-                  description: 'Manage products',
-                  onTap: () => context.push('/products'),
+              const SizedBox(height: 8),
+              Text(
+                'Manage your LuxeFinds store',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppTheme.textSecondaryColor,
                 ),
-                DashboardCard(
-                  title: 'Orders',
-                  icon: Icons.receipt_outlined,
-                  description: 'View all orders',
-                  onTap: () => context.push('/orders'),
-                ),
-                DashboardCard(
-                  title: 'Categories',
-                  icon: Icons.category_outlined,
-                  description: 'Manage categories',
-                  onTap: () => context.push('/categories'),
-                ),
-                DashboardCard(
-                  title: 'Settings',
-                  icon: Icons.settings_outlined,
-                  description: 'App settings',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Settings coming soon')),
-                    );
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            Text(
-              'System Info',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
+              ),
+              const SizedBox(height: 32),
+              
+              // Analytics Section
+              analyticsAsync.when(
+                data: (analytics) => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _InfoRow(
-                      label: 'Admin Email',
-                      value: authState.user?.email ?? 'N/A',
+                    Text(
+                      'Overview',
+                      style: Theme.of(context).textTheme.headlineSmall,
                     ),
-                    const Divider(height: 24),
-                    _InfoRow(
-                      label: 'Admin Name',
-                      value: authState.user?.name ?? 'N/A',
+                    const SizedBox(height: 16),
+                    
+                    // Stats Grid
+                    GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
+                      childAspectRatio: 1.2,
+                      children: [
+                        StatCardWithBreakdown(
+                          title: 'Total Orders',
+                          value: '${analytics.orders.total}',
+                          icon: Icons.receipt_outlined,
+                          color: Colors.blue,
+                          breakdown: {
+                            'Pending': analytics.orders.pending,
+                            'Processing': analytics.orders.processing,
+                            'Shipped': analytics.orders.shipped,
+                            'Delivered': analytics.orders.delivered,
+                            'Cancelled': analytics.orders.cancelled,
+                          },
+                          onTap: () => context.push('/orders'),
+                        ),
+                        StatCard(
+                          title: 'Total Revenue',
+                          value: '\$${analytics.revenue.total.toStringAsFixed(2)}',
+                          icon: Icons.attach_money,
+                          color: AppTheme.successColor,
+                          subtitle: 'This month: \$${analytics.revenue.thisMonth.toStringAsFixed(2)}',
+                        ),
+                        StatCard(
+                          title: 'Low Stock',
+                          value: '${analytics.products.lowStock}',
+                          icon: Icons.warning_amber_rounded,
+                          color: analytics.products.lowStock > 0 
+                              ? Colors.orange 
+                              : AppTheme.successColor,
+                          subtitle: '${analytics.products.outOfStock} out of stock',
+                        ),
+                        StatCard(
+                          title: 'Products',
+                          value: '${analytics.products.total}',
+                          icon: Icons.shopping_bag_outlined,
+                          color: AppTheme.primaryColor,
+                          subtitle: '${analytics.products.total - analytics.products.outOfStock} in stock',
+                          onTap: () => context.push('/products'),
+                        ),
+                      ],
                     ),
+                    
+                    const SizedBox(height: 32),
+                    
+                    // Recent Orders
+                    Text(
+                      'Recent Activity',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 16),
+                    RecentOrdersWidget(orders: analytics.recentOrders),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Low Stock Products
+                    if (analytics.lowStockProducts.isNotEmpty) ...[
+                      LowStockWidget(products: analytics.lowStockProducts),
+                      const SizedBox(height: 24),
+                    ],
                   ],
                 ),
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(48),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+                error: (error, stack) => Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: AppTheme.errorColor,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Failed to load analytics',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        error.toString(),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.textSecondaryColor,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () => ref.invalidate(analyticsProvider),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ],
+              
+              const SizedBox(height: 32),
+              Text(
+                'Quick Actions',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 16),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                children: [
+                  DashboardCard(
+                    title: 'Products',
+                    icon: Icons.shopping_bag_outlined,
+                    description: 'Manage products',
+                    onTap: () => context.push('/products'),
+                  ),
+                  DashboardCard(
+                    title: 'Orders',
+                    icon: Icons.receipt_outlined,
+                    description: 'View all orders',
+                    onTap: () => context.push('/orders'),
+                  ),
+                  DashboardCard(
+                    title: 'Categories',
+                    icon: Icons.category_outlined,
+                    description: 'Manage categories',
+                    onTap: () => context.push('/categories'),
+                  ),
+                  DashboardCard(
+                    title: 'Settings',
+                    icon: Icons.settings_outlined,
+                    description: 'App settings',
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Settings coming soon')),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
