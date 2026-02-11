@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
+import '../../models/product.dart';
 import '../../services/auth_service.dart';
 import '../../services/product_service.dart';
 
@@ -195,17 +196,17 @@ class HomeScreen extends ConsumerWidget {
 }
 
 class ProductCard extends StatelessWidget {
-  final Product;
+  final Product product;
 
   const ProductCard({
     Key? key,
-    required this.Product,
+    required this.product,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push('/products/${Product.id}'),
+      onTap: () => context.push('/products/${product.id}'),
       child: Card(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -217,14 +218,14 @@ class ProductCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppTheme.surfaceColor,
                   image: DecorationImage(
-                    image: NetworkImage(Product.image),
+                    image: NetworkImage(product.image),
                     fit: BoxFit.cover,
                     onError: (exception, stackTrace) {},
                   ),
                 ),
                 child: Stack(
                   children: [
-                    if (Product.featured)
+                    if (product.featured)
                       Positioned(
                         top: 8,
                         right: 8,
@@ -256,23 +257,23 @@ class ProductCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    Product.name,
+                    product.name,
                     style: Theme.of(context).textTheme.labelLarge,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '\$${Product.price.toStringAsFixed(2)}',
+                    '\$${product.price.toStringAsFixed(2)}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppTheme.primaryColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  if (Product.stock > 0)
+                  if (product.stock > 0)
                     Text(
-                      '${Product.stock} in stock',
+                      '${product.stock} in stock',
                       style: Theme.of(context).textTheme.labelSmall,
                     )
                   else

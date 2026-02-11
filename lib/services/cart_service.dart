@@ -3,6 +3,7 @@ import 'package:logger/logger.dart';
 import '../models/cart.dart';
 import '../models/product.dart';
 import 'http_client.dart';
+import 'auth_service.dart';
 
 final cartServiceProvider = Provider((ref) {
   final httpClient = ref.watch(httpClientProvider);

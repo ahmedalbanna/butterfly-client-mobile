@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
+import '../../models/cart.dart';
 import '../../services/cart_service.dart';
 
 class CartScreen extends ConsumerWidget {
@@ -53,7 +54,7 @@ class CartScreen extends ConsumerWidget {
                   itemBuilder: (context, index) {
                     final item = cartState.cart!.items[index];
                     return CartItemTile(
-                      item: item,
+                      cartItem: item,
                       onQuantityChanged: (newQuantity) async {
                         try {
                           await ref
@@ -198,13 +199,13 @@ class CartScreen extends ConsumerWidget {
 }
 
 class CartItemTile extends StatelessWidget {
-  final CartItem;
+  final CartItem cartItem;
   final Function(int) onQuantityChanged;
   final VoidCallback onRemove;
 
   const CartItemTile({
     Key? key,
-    required this.CartItem,
+    required this.cartItem,
     required this.onQuantityChanged,
     required this.onRemove,
   }) : super(key: key);
@@ -226,7 +227,7 @@ class CartItemTile extends StatelessWidget {
                 color: AppTheme.surfaceColor,
                 borderRadius: BorderRadius.circular(8),
                 image: DecorationImage(
-                  image: NetworkImage(CartItem.product.image),
+                  image: NetworkImage(cartItem.product.image),
                   fit: BoxFit.cover,
                   onError: (exception, stackTrace) {},
                 ),
@@ -241,14 +242,14 @@ class CartItemTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    CartItem.product.name,
+                    cartItem.product.name,
                     style: Theme.of(context).textTheme.labelLarge,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '\$${CartItem.product.price.toStringAsFixed(2)}',
+                    '\$${cartItem.product.price.toStringAsFixed(2)}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppTheme.primaryColor,
                       fontWeight: FontWeight.bold,
@@ -283,16 +284,16 @@ class CartItemTile extends StatelessWidget {
                           minWidth: 32,
                           minHeight: 32,
                         ),
-                        onPressed: CartItem.quantity > 1
+                        onPressed: cartItem.quantity > 1
                             ? () =>
-                            onQuantityChanged(CartItem.quantity - 1)
+                            onQuantityChanged(cartItem.quantity - 1)
                             : null,
                       ),
                       SizedBox(
                         width: 30,
                         child: Center(
                           child: Text(
-                            '${CartItem.quantity}',
+                            '${cartItem.quantity}',
                             style: Theme.of(context).textTheme.labelLarge,
                           ),
                         ),
@@ -306,7 +307,7 @@ class CartItemTile extends StatelessWidget {
                           minHeight: 32,
                         ),
                         onPressed: () =>
-                            onQuantityChanged(CartItem.quantity + 1),
+                            onQuantityChanged(cartItem.quantity + 1),
                       ),
                     ],
                   ),
@@ -327,7 +328,7 @@ class CartItemTile extends StatelessWidget {
 
                 // Subtotal
                 Text(
-                  '\$${CartItem.subtotal.toStringAsFixed(2)}',
+                  '\$${cartItem.subtotal.toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),

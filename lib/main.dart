@@ -11,7 +11,7 @@ void main() {
     const ProviderScope(
       child: LuxeFindsApp(),
     ),
-  );flutter doctor --android-licenses
+  );
 }
 
 class LuxeFindsApp extends ConsumerWidget {

@@ -6,6 +6,8 @@ part 'order.g.dart';
 
 @freezed
 class OrderItem with _$OrderItem {
+  const OrderItem._();
+  
   const factory OrderItem({
     required String id,
     required String productId,
@@ -22,6 +24,8 @@ class OrderItem with _$OrderItem {
 
 @freezed
 class Order with _$Order {
+  const Order._();
+  
   const factory Order({
     required String id,
     required String status,
@@ -105,6 +109,4 @@ class CreateOrderRequest with _$CreateOrderRequest {
 
   factory CreateOrderRequest.fromJson(Map<String, dynamic> json) =>
       _$CreateOrderRequestFromJson(json);
-
-  Map<String, dynamic> toJson() => _$CreateOrderRequestToJson(this);
 }

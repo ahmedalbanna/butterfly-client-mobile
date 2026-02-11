@@ -7,6 +7,8 @@ class HttpClient {
   late final Dio _dio;
   final FlutterSecureStorage _secureStorage;
   final Logger _logger = Logger();
+  bool _isRefreshing = false;
+  final List<Function> _pendingRequests = [];
 
   HttpClient({FlutterSecureStorage? secureStorage})
       : _secureStorage = secureStorage ?? const FlutterSecureStorage() {
@@ -64,10 +66,126 @@ class HttpClient {
 
     // Handle 401 - try to refresh token
     if (error.response?.statusCode == 401) {
-      // Token refresh logic will be handled by auth service
+      final refreshToken = await getRefreshToken();
+      
+      // No refresh token available, proceed with error
+      if (refreshToken == null) {
+        _logger.w('No refresh token available, cannot refresh');
+        return handler.next(error);
+      }
+
+      // If already refreshing, queue this request
+      if (_isRefreshing) {
+        _logger.d('Token refresh in progress, queuing request');
+        return _queueRequest(() async {
+          return _retryRequest(error.requestOptions, handler);
+        });
+      }
+
+      // Start token refresh process
+      _isRefreshing = true;
+      _logger.i('Attempting to refresh access token');
+
+      try {
+        // Call refresh endpoint
+        final response = await _dio.post<Map<String, dynamic>>(
+          '/auth/refresh',
+          data: {'refreshToken': refreshToken},
+        );
+
+        if (response.statusCode == 200 && response.data != null) {
+          final data = response.data!;
+          
+          // Extract new tokens
+          final newAccessToken = data['accessToken'] as String?;
+          final newRefreshToken = data['refreshToken'] as String?;
+
+          if (newAccessToken != null && newRefreshToken != null) {
+            // Save new tokens
+            await saveTokens(
+              accessToken: newAccessToken,
+              refreshToken: newRefreshToken,
+            );
+            _logger.i('Token refresh successful');
+
+            // Retry original request with new token
+            final retryResponse = await _retryRequest(
+              error.requestOptions,
+              handler,
+            );
+
+            // Process all pending requests
+            _processPendingRequests();
+            
+            return retryResponse;
+          }
+        }
+
+        // Refresh failed - clear tokens and logout
+        _logger.e('Token refresh failed - invalid response');
+        await _handleRefreshFailure();
+        return handler.next(error);
+      } catch (e) {
+        _logger.e('Token refresh error: $e');
+        await _handleRefreshFailure();
+        return handler.next(error);
+      } finally {
+        _isRefreshing = false;
+      }
     }
 
     return handler.next(error);
+  }
+
+  /// Queue a request while token refresh is in progress
+  Future<void> _queueRequest(Function request) async {
+    _pendingRequests.add(request);
+  }
+
+  /// Process all pending requests after token refresh
+  void _processPendingRequests() {
+    for (final request in _pendingRequests) {
+      request();
+    }
+    _pendingRequests.clear();
+  }
+
+  /// Retry a failed request with new token
+  Future<void> _retryRequest(
+    RequestOptions requestOptions,
+    ErrorInterceptorHandler handler,
+  ) async {
+    try {
+      final token = await getAccessToken();
+      final opts = Options(
+        method: requestOptions.method,
+        headers: {
+          ...requestOptions.headers,
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final response = await _dio.request(
+        requestOptions.path,
+        options: opts,
+        data: requestOptions.data,
+        queryParameters: requestOptions.queryParameters,
+      );
+
+      return handler.resolve(response);
+    } catch (e) {
+      _logger.e('Retry request failed: $e');
+      rethrow;
+    }
+  }
+
+  /// Handle token refresh failure - clear tokens
+  Future<void> _handleRefreshFailure() async {
+    _logger.w('Clearing tokens due to refresh failure');
+    await clearTokens();
+    _pendingRequests.clear();
+    // Note: Auto-logout will be handled by auth state provider
+    // when it detects missing tokens on next API call
   }
 
   /// Get request

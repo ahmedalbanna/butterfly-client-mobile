@@ -191,7 +191,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
 
-                          if (product.materials.isNotEmpty)
+                          if (product.materials?.isNotEmpty ?? false)
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -210,7 +210,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               ],
                             ),
 
-                          if (product.care.isNotEmpty)
+                          if (product.care?.isNotEmpty ?? false)
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [

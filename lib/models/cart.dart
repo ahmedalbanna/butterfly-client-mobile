@@ -6,6 +6,8 @@ part 'cart.g.dart';
 
 @freezed
 class CartItem with _$CartItem {
+  const CartItem._();
+  
   const factory CartItem({
     required String id,
     required String productId,
@@ -21,6 +23,8 @@ class CartItem with _$CartItem {
 
 @freezed
 class Cart with _$Cart {
+  const Cart._();
+  
   const factory Cart({
     String? id,
     required String userId,
@@ -66,8 +70,6 @@ class AddToCartRequest with _$AddToCartRequest {
 
   factory AddToCartRequest.fromJson(Map<String, dynamic> json) =>
       _$AddToCartRequestFromJson(json);
-
-  Map<String, dynamic> toJson() => _$AddToCartRequestToJson(this);
 }
 
 @freezed
@@ -78,6 +80,4 @@ class UpdateCartItemRequest with _$UpdateCartItemRequest {
 
   factory UpdateCartItemRequest.fromJson(Map<String, dynamic> json) =>
       _$UpdateCartItemRequestFromJson(json);
-
-  Map<String, dynamic> toJson() => _$UpdateCartItemRequestToJson(this);
 }

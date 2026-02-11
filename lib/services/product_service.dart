@@ -3,6 +3,7 @@ import 'package:logger/logger.dart';
 import '../models/product.dart';
 import '../config/app_config.dart';
 import 'http_client.dart';
+import 'auth_service.dart';
 
 final productServiceProvider = Provider((ref) {
   final httpClient = ref.watch(httpClientProvider);
@@ -197,4 +198,27 @@ class ProductsParams {
       inStock: inStock ?? this.inStock,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProductsParams &&
+          runtimeType == other.runtimeType &&
+          page == other.page &&
+          limit == other.limit &&
+          categoryId == other.categoryId &&
+          search == other.search &&
+          sortBy == other.sortBy &&
+          sortOrder == other.sortOrder &&
+          inStock == other.inStock;
+
+  @override
+  int get hashCode =>
+      page.hashCode ^
+      limit.hashCode ^
+      categoryId.hashCode ^
+      search.hashCode ^
+      sortBy.hashCode ^
+      sortOrder.hashCode ^
+      inStock.hashCode;
 }

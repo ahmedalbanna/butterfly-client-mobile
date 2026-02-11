@@ -3,6 +3,7 @@ import 'package:logger/logger.dart';
 import '../models/order.dart';
 import '../config/app_config.dart';
 import 'http_client.dart';
+import 'auth_service.dart';
 
 final orderServiceProvider = Provider((ref) {
   final httpClient = ref.watch(httpClientProvider);
@@ -159,6 +160,17 @@ class OrdersParams {
       limit: limit ?? this.limit,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is OrdersParams &&
+          runtimeType == other.runtimeType &&
+          page == other.page &&
+          limit == other.limit;
+
+  @override
+  int get hashCode => page.hashCode ^ limit.hashCode;
 }
 
 /// Order state notifier for checkout
