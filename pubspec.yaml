@@ -35,11 +35,15 @@ dependencies:
   # Charts and data visualization
   fl_chart: ^0.64.0
   
+  # Image Picker
+  image_picker: ^1.0.4
+  
   # Utilities
   freezed_annotation: ^2.4.1
   json_serializable: ^6.7.1
   json_annotation: ^4.8.1
   logger: ^2.0.0
+  http_parser: ^4.0.2
 
 dev_dependencies:
   flutter_test:

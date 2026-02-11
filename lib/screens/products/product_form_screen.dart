@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../config/theme.dart';
 import '../../services/product_service.dart';
 import '../../services/category_service.dart';
+import '../../services/upload_service.dart';
 
 class ProductFormScreen extends ConsumerStatefulWidget {
   final String? productId;
@@ -25,6 +28,8 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   String? _selectedCategoryId;
   bool _featured = false;
   bool _isLoading = false;
+  bool _isUploading = false;
+  File? _selectedImageFile;
 
   @override
   void initState() {
@@ -61,6 +66,69 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       }
     } finally {
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+
+      if (image != null) {
+        setState(() {
+          _selectedImageFile = File(image.path);
+        });
+        await _uploadImage();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to pick image: ${e.toString()}'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadImage() async {
+    if (_selectedImageFile == null) return;
+
+    try {
+      setState(() => _isUploading = true);
+      
+      final uploadService = ref.read(uploadServiceProvider);
+      final result = await uploadService.uploadImage(_selectedImageFile!);
+      
+      setState(() {
+        _imageController.text = result.url;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Image uploaded successfully'),
+            backgroundColor: AppTheme.successColor,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to upload image: ${e.toString()}'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isUploading = false);
     }
   }
 
@@ -224,18 +292,90 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _imageController,
-                decoration: const InputDecoration(
-                  labelText: 'Image URL',
-                  hintText: 'Enter image URL',
-                ),
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return 'Image URL is required';
-                  }
-                  return null;
-                },
+              
+              // Image Upload Section
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _imageController,
+                          decoration: const InputDecoration(
+                            labelText: 'Image URL',
+                            hintText: 'Enter image URL or upload',
+                          ),
+                          validator: (value) {
+                            if (value?.isEmpty ?? true) {
+                              return 'Image URL is required';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        onPressed: _isUploading ? null : _pickImage,
+                        icon: _isUploading
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : const Icon(Icons.upload_file),
+                        label: Text(_isUploading ? 'Uploading...' : 'Upload'),
+                      ),
+                    ],
+                  ),
+                  if (_imageController.text.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      height: 200,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: _selectedImageFile != null
+                            ? Image.file(
+                                _selectedImageFile!,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.network(
+                                _imageController.text,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.broken_image,
+                                          size: 48,
+                                          color: Colors.grey.shade400,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Failed to load image',
+                                          style: TextStyle(
+                                            color: Colors.grey.shade600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
               const SizedBox(height: 16),
               // Dynamic category dropdown

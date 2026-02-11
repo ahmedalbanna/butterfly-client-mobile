@@ -14,11 +14,48 @@ class OrdersScreen extends ConsumerStatefulWidget {
 class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   late AdminOrdersParams _params;
   String? _selectedStatus;
+  final _scrollController = ScrollController();
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
     super.initState();
     _params = AdminOrdersParams();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMore();
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoadingMore) return;
+
+    final ordersAsync = ref.read(adminOrdersProvider(_params));
+    final orders = ordersAsync.value;
+
+    if (orders != null && orders.pagination.page < orders.pagination.pages) {
+      setState(() {
+        _isLoadingMore = true;
+        _params = _params.copyWith(page: _params.page + 1);
+      });
+
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      if (mounted) {
+        setState(() => _isLoadingMore = false);
+      }
+    }
   }
 
   @override
@@ -122,9 +159,30 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                   );
                 }
 
-                return SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: DataTable(
+                return Column(
+                  children: [
+                    // Pagination info
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Showing ${response.data.length} of ${response.pagination.total} orders',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          Text(
+                            'Page ${response.pagination.page} of ${response.pagination.pages}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        controller: _scrollController,
+                        scrollDirection: Axis.vertical,
+                        child: DataTable(
                     columns: const [
                       DataColumn(label: Text('Order ID')),
                       DataColumn(label: Text('Customer')),
@@ -191,6 +249,14 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                       );
                     }).toList(),
                   ),
+                      ),
+                    ),
+                    if (_isLoadingMore)
+                      const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: CircularProgressIndicator(),
+                      ),
+                  ],
                 );
               },
               loading: () => const Center(

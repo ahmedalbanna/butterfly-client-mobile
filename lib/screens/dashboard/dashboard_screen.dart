@@ -7,6 +7,8 @@ import '../../services/analytics_service.dart';
 import 'widgets/stat_card.dart';
 import 'widgets/recent_orders_widget.dart';
 import 'widgets/low_stock_widget.dart';
+import 'widgets/revenue_chart.dart';
+import 'widgets/orders_chart.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -130,6 +132,45 @@ class DashboardScreen extends ConsumerWidget {
                           onTap: () => context.push('/products'),
                         ),
                       ],
+                    ),
+                    
+                    const SizedBox(height: 32),
+                    
+                    // Charts Section
+                    Text(
+                      'Analytics',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Revenue & Orders Charts
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        if (constraints.maxWidth > 900) {
+                          // Two columns on wider screens
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: RevenueChart(revenue: analytics.revenue),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: OrdersChart(orders: analytics.orders),
+                              ),
+                            ],
+                          );
+                        } else {
+                          // Single column on narrow screens
+                          return Column(
+                            children: [
+                              RevenueChart(revenue: analytics.revenue),
+                              const SizedBox(height: 16),
+                              OrdersChart(orders: analytics.orders),
+                            ],
+                          );
+                        }
+                      },
                     ),
                     
                     const SizedBox(height: 32),

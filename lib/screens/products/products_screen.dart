@@ -14,17 +14,50 @@ class ProductsScreen extends ConsumerStatefulWidget {
 class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   late AdminProductsParams _params;
   final _searchController = TextEditingController();
+  final _scrollController = ScrollController();
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
     super.initState();
     _params = AdminProductsParams();
+    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMore();
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoadingMore) return;
+
+    final productsAsync = ref.read(adminProductsProvider(_params));
+    final products = productsAsync.value;
+
+    if (products != null && products.pagination.page < products.pagination.pages) {
+      setState(() {
+        _isLoadingMore = true;
+        _params = _params.copyWith(page: _params.page + 1);
+      });
+
+      // Wait for new data to load
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      if (mounted) {
+        setState(() => _isLoadingMore = false);
+      }
+    }
   }
 
   @override
@@ -108,9 +141,30 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                   );
                 }
 
-                return SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: DataTable(
+                return Column(
+                  children: [
+                    // Pagination info
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Showing ${response.data.length} of ${response.pagination.total} products',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          Text(
+                            'Page ${response.pagination.page} of ${response.pagination.pages}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        controller: _scrollController,
+                        scrollDirection: Axis.vertical,
+                        child: DataTable(
                     columns: const [
                       DataColumn(label: Text('Name')),
                       DataColumn(label: Text('Price')),
@@ -181,6 +235,14 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                       );
                     }).toList(),
                   ),
+                      ),
+                    ),
+                    if (_isLoadingMore)
+                      const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: CircularProgressIndicator(),
+                      ),
+                  ],
                 );
               },
               loading: () => const Center(
