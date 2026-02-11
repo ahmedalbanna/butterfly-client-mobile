@@ -4,7 +4,20 @@ import 'package:intl/intl.dart';
 import '../../config/theme.dart';
 import '../../services/order_service.dart';
 
-class OrderDetailScreen extends ConsumerState<OrderDetailScreenWidget> {
+class OrderDetailScreenWidget extends ConsumerStatefulWidget {
+  final String orderId;
+
+  const OrderDetailScreenWidget({
+    Key? key,
+    required this.orderId,
+  }) : super(key: key);
+
+  @override
+  ConsumerState<OrderDetailScreenWidget> createState() =>
+      _OrderDetailScreenState();
+}
+
+class _OrderDetailScreenState extends ConsumerState<OrderDetailScreenWidget> {
   String? _selectedStatus;
   bool _isUpdating = false;
 
@@ -338,20 +351,6 @@ class OrderDetailScreen extends ConsumerState<OrderDetailScreenWidget> {
       default:
         return AppTheme.textSecondaryColor;
     }
-  }
-}
-
-class OrderDetailScreenWidget extends ConsumerWidget {
-  final String orderId;
-
-  const OrderDetailScreenWidget({
-    Key? key,
-    required this.orderId,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return OrderDetailScreen(orderId: orderId, ref: ref);
   }
 }
 

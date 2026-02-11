@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import '../config/app_config.dart';
 import 'http_client.dart';
+import 'auth_service.dart';
 
 final productServiceProvider = Provider((ref) {
   final httpClient = ref.watch(httpClientProvider);

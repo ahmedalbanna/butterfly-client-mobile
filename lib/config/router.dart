@@ -6,7 +6,7 @@ import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/products/products_screen.dart';
 import '../screens/products/product_form_screen.dart';
 import '../screens/orders/orders_screen.dart';
-import '../screens/orders/order_detail_screen.dart';
+import '../screens/orders/order_detail_screen.dart' show OrderDetailScreenWidget;
 import '../screens/categories/categories_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -76,7 +76,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'order_detail',
         builder: (context, state) {
           final id = state.pathParameters['id']!;
-          return OrderDetailScreen(orderId: id);
+          return OrderDetailScreenWidget(orderId: id);
         },
       ),
       GoRoute(

@@ -6,7 +6,7 @@ class AppConfig {
   // API Configuration
   static const String apiBaseUrl = String.fromEnvironment(
     'API_URL',
-    defaultValue: 'http://localhost:9002/api',
+    defaultValue: 'https://9002-01kg82wsgx3wam97rd4g74d1h5.cloudspaces.litng.ai/api',
   );
   
   // Request timeouts

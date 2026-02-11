@@ -61,7 +61,68 @@ class HttpClient {
     _logger.e('✗ Error: ${error.message}');
 
     if (error.response?.statusCode == 401) {
-      // Handle 401
+      // Attempt to refresh token
+      try {
+        final refreshToken = await getRefreshToken();
+        
+        if (refreshToken != null) {
+          _logger.i('Attempting to refresh access token');
+          
+          final refreshResponse = await _dio.post<Map<String, dynamic>>(
+            '/auth/refresh',
+            data: {'refreshToken': refreshToken},
+            options: Options(
+              headers: {'Authorization': 'Bearer $refreshToken'},
+            ),
+          );
+          
+          if (refreshResponse.statusCode == 200) {
+            final data = refreshResponse.data!;
+            if (data['success'] == true) {
+              final newAccessToken = data['accessToken'];
+              final newRefreshToken = data['refreshToken'];
+              
+              if (newAccessToken != null && newRefreshToken != null) {
+                // Save new tokens
+                await saveTokens(
+                  accessToken: newAccessToken,
+                  refreshToken: newRefreshToken,
+                );
+                
+                _logger.i('Token refreshed successfully');
+                
+                // Retry the original request with new token
+                final retryOptions = error.requestOptions;
+                retryOptions.headers['Authorization'] = 'Bearer $newAccessToken';
+                
+                try {
+                  final retryResponse = await _dio.request<dynamic>(
+                    retryOptions.path,
+                    options: Options(
+                      method: retryOptions.method,
+                      headers: retryOptions.headers,
+                    ),
+                    data: retryOptions.data,
+                    queryParameters: retryOptions.queryParameters,
+                  );
+                  return handler.resolve(retryResponse);
+                } catch (retryError) {
+                  _logger.e('Failed to retry request after token refresh: $retryError');
+                  return handler.next(error);
+                }
+              }
+            }
+          }
+        }
+        
+        // If we get here, refresh failed - clear tokens and let 401 propagate
+        _logger.e('Token refresh failed, clearing stored tokens');
+        await clearTokens();
+      } catch (e) {
+        _logger.e('Error during token refresh: $e');
+        // Clear tokens on any error
+        await clearTokens();
+      }
     }
 
     return handler.next(error);

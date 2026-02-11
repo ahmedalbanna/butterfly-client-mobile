@@ -48,19 +48,7 @@ dev_dependencies:
   flutter_lints: ^3.0.0
   build_runner: ^2.4.6
   riverpod_generator: ^2.3.0
-  freezed: ^2.4.1
-  json_serializable: ^6.7.1
 
 flutter:
   uses-material-design: true
   
-  assets:
-    - assets/images/
-    - assets/icons/
-  
-  fonts:
-    - family: Alegreya
-      fonts:
-        - asset: assets/fonts/Alegreya-Regular.ttf
-        - asset: assets/fonts/Alegreya-Bold.ttf
-          weight: 700

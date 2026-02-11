@@ -42,6 +42,20 @@ class AuthService {
             throw AuthException('This account does not have admin access');
           }
           
+          // Extract and save tokens
+          final accessToken = data['accessToken'];
+          final refreshToken = data['refreshToken'];
+          
+          if (accessToken == null || refreshToken == null) {
+            throw AuthException('Invalid response: missing authentication tokens');
+          }
+          
+          // Save tokens to secure storage
+          await _httpClient.saveTokens(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+          );
+          
           _logger.i('Admin logged in successfully: ${user.email}');
           return user;
         }
