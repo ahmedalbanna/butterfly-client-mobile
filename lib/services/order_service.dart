@@ -171,7 +171,7 @@ class AdminOrder {
   final String id;
   final String status;
   final double total;
-  final String? shippingAddress;
+  final String? customerAddress;
   final AdminUser user;
   final List<AdminOrderItem> items;
   final DateTime? createdAt;
@@ -181,7 +181,7 @@ class AdminOrder {
     required this.id,
     required this.status,
     required this.total,
-    this.shippingAddress,
+    this.customerAddress,
     required this.user,
     required this.items,
     this.createdAt,
@@ -210,7 +210,7 @@ class AdminOrder {
       id: json['id'],
       status: json['status'],
       total: (json['total'] as num).toDouble(),
-      shippingAddress: json['shippingAddress'],
+      customerAddress: json['customerAddress'],
       user: AdminUser.fromJson(json['user']),
       items: (json['items'] as List)
           .map((item) => AdminOrderItem.fromJson(item))

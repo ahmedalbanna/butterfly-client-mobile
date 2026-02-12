@@ -124,9 +124,9 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreenWidget> {
 
                 const SizedBox(height: 24),
 
-                // Shipping Address
+                // Customer Address
                 Text(
-                  'Shipping Address',
+                  'Customer Address',
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 12),
@@ -134,7 +134,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreenWidget> {
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
-                      order.shippingAddress ?? 'N/A',
+                      order.customerAddress ?? 'N/A',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
