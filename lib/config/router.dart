@@ -16,27 +16,36 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
 
   return GoRouter(
-    initialLocation: authState.isLoading ? '/' : (authState.user != null ? '/home' : '/login'),
+    initialLocation: '/',
     redirect: (context, state) {
       final isLoading = authState.isLoading;
       final hasUser = authState.user != null;
       final isGoingToLogin = state.matchedLocation == '/login';
       final isGoingToSignup = state.matchedLocation == '/signup';
+      final isAtRoot = state.matchedLocation == '/';
 
-      if (isLoading) return null;
+      // Allow navigation while loading
+      if (isLoading && !isAtRoot) return null;
 
-      if (!hasUser) {
-        if (isGoingToLogin || isGoingToSignup) return null;
-        return '/login';
+      // Redirect authenticated users away from auth pages
+      if (hasUser && (isGoingToLogin || isGoingToSignup || isAtRoot)) {
+        return '/home';
       }
 
-      if (isGoingToLogin || isGoingToSignup) {
-        return '/home';
+      // Redirect unauthenticated users to login (except if already on auth pages)
+      if (!hasUser && !isGoingToLogin && !isGoingToSignup) {
+        return '/login';
       }
 
       return null;
     },
     routes: [
+      // Root route for initial navigation
+      GoRoute(
+        path: '/',
+        redirect: (context, state) => null, // Handled by global redirect
+      ),
+      
       // Auth Routes
       GoRoute(
         path: '/login',

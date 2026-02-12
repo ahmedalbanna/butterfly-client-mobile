@@ -37,6 +37,25 @@ class AuthService {
         final data = response.data!;
         if (data['success'] == true) {
           final user = User.fromJson(data['user']);
+          final accessToken = data['accessToken'] as String?;
+          final refreshToken = data['refreshToken'] as String?;
+          
+          _logger.i('Login response received');
+          _logger.d('Access token: ${accessToken != null ? 'Present (${accessToken.length} chars)' : 'NULL'}');
+          _logger.d('Refresh token: ${refreshToken != null ? 'Present (${refreshToken.length} chars)' : 'NULL'}');
+          
+          // Save tokens to secure storage
+          if (accessToken != null && refreshToken != null) {
+            _logger.i('Saving tokens to secure storage...');
+            await _httpClient.saveTokens(
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+            );
+            _logger.i('✓ Tokens saved successfully');
+          } else {
+            _logger.e('✗ Cannot save tokens - accessToken or refreshToken is null');
+          }
+          
           _logger.i('User logged in successfully: ${user.email}');
           return user;
         }
@@ -76,6 +95,25 @@ class AuthService {
         final data = response.data!;
         if (data['success'] == true) {
           final user = User.fromJson(data['user']);
+          final accessToken = data['accessToken'] as String?;
+          final refreshToken = data['refreshToken'] as String?;
+          
+          _logger.i('Register response received');
+          _logger.d('Access token: ${accessToken != null ? 'Present (${accessToken.length} chars)' : 'NULL'}');
+          _logger.d('Refresh token: ${refreshToken != null ? 'Present (${refreshToken.length} chars)' : 'NULL'}');
+          
+          // Save tokens to secure storage
+          if (accessToken != null && refreshToken != null) {
+            _logger.i('Saving tokens to secure storage...');
+            await _httpClient.saveTokens(
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+            );
+            _logger.i('✓ Tokens saved successfully');
+          } else {
+            _logger.e('✗ Cannot save tokens - accessToken or refreshToken is null');
+          }
+          
           _logger.i('User registered successfully: ${user.email}');
           return user;
         }

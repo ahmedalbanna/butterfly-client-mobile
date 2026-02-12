@@ -44,9 +44,11 @@ class HttpClient {
     final token = await getAccessToken();
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
+      _logger.d('→ ${options.method} ${options.path} [AUTH]');
+    } else {
+      _logger.d('→ ${options.method} ${options.path} [NO TOKEN]');
     }
 
-    _logger.d('→ ${options.method} ${options.path}');
     return handler.next(options);
   }
 
@@ -266,7 +268,18 @@ class HttpClient {
 
   /// Get access token from secure storage
   Future<String?> getAccessToken() async {
-    return _secureStorage.read(key: AppConfig.tokenStorageKey);
+    try {
+      final token = await _secureStorage.read(key: AppConfig.tokenStorageKey);
+      if (token != null) {
+        _logger.d('✓ Access token found (length: ${token.length})');
+      } else {
+        _logger.w('✗ Access token not found in secure storage');
+      }
+      return token;
+    } catch (e) {
+      _logger.e('Error reading access token: $e');
+      return null;
+    }
   }
 
   /// Save tokens to secure storage
@@ -274,13 +287,34 @@ class HttpClient {
     required String accessToken,
     required String refreshToken,
   }) async {
-    await Future.wait([
-      _secureStorage.write(key: AppConfig.tokenStorageKey, value: accessToken),
-      _secureStorage.write(
-        key: AppConfig.refreshTokenStorageKey,
-        value: refreshToken,
-      ),
-    ]);
+    try {
+      _logger.i('Saving tokens to secure storage...');
+      _logger.d('Access token length: ${accessToken.length}');
+      _logger.d('Refresh token length: ${refreshToken.length}');
+      
+      await Future.wait([
+        _secureStorage.write(key: AppConfig.tokenStorageKey, value: accessToken),
+        _secureStorage.write(
+          key: AppConfig.refreshTokenStorageKey,
+          value: refreshToken,
+        ),
+      ]);
+      
+      _logger.i('✓ Tokens saved successfully');
+      
+      // Verify tokens were saved
+      final verifyAccess = await _secureStorage.read(key: AppConfig.tokenStorageKey);
+      final verifyRefresh = await _secureStorage.read(key: AppConfig.refreshTokenStorageKey);
+      
+      if (verifyAccess != null && verifyRefresh != null) {
+        _logger.i('✓ Token storage verification: OK');
+      } else {
+        _logger.e('✗ Token storage verification failed - tokens not found after save');
+      }
+    } catch (e) {
+      _logger.e('Error saving tokens: $e');
+      rethrow;
+    }
   }
 
   /// Clear tokens from secure storage

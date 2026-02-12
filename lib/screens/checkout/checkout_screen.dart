@@ -18,8 +18,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _cityController = TextEditingController();
   final _stateController = TextEditingController();
   final _zipController = TextEditingController();
+  final _billingAddressController = TextEditingController();
+  final _billingCityController = TextEditingController();
+  final _billingStateController = TextEditingController();
+  final _billingZipController = TextEditingController();
   String _paymentMethod = 'credit_card';
   bool _agreeToTerms = false;
+  bool _useSameAddress = true;
 
   @override
   void dispose() {
@@ -27,6 +32,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     _cityController.dispose();
     _stateController.dispose();
     _zipController.dispose();
+    _billingAddressController.dispose();
+    _billingCityController.dispose();
+    _billingStateController.dispose();
+    _billingZipController.dispose();
     super.dispose();
   }
 
@@ -34,10 +43,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     if (_formKey.currentState!.validate() && _agreeToTerms) {
       final shippingAddress =
           '${_addressController.text}, ${_cityController.text}, ${_stateController.text} ${_zipController.text}';
+      
+      final billingAddress = _useSameAddress
+          ? shippingAddress
+          : '${_billingAddressController.text}, ${_billingCityController.text}, ${_billingStateController.text} ${_billingZipController.text}';
 
       try {
         await ref.read(checkoutNotifierProvider.notifier).checkout(
           shippingAddress: shippingAddress,
+          billingAddress: billingAddress,
           paymentMethod: _paymentMethod,
         );
 
@@ -228,6 +242,90 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               ),
 
               const SizedBox(height: 24),
+
+              // Billing Address
+              Text(
+                'Billing Address',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 12),
+              CheckboxListTile(
+                title: const Text('Same as shipping address'),
+                value: _useSameAddress,
+                onChanged: (value) {
+                  setState(() {
+                    _useSameAddress = value ?? true;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              if (!_useSameAddress) ...[
+                TextFormField(
+                  controller: _billingAddressController,
+                  decoration: const InputDecoration(
+                    labelText: 'Street Address',
+                    prefixIcon: Icon(Icons.location_on_outlined),
+                    hintText: 'Enter your street address',
+                  ),
+                  validator: (value) {
+                    if (!_useSameAddress && (value?.isEmpty ?? true)) {
+                      return 'Street address is required';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _billingCityController,
+                        decoration: const InputDecoration(
+                          labelText: 'City',
+                          hintText: 'City',
+                        ),
+                        validator: (value) {
+                          if (!_useSameAddress && (value?.isEmpty ?? true)) {
+                            return 'City is required';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _billingStateController,
+                        decoration: const InputDecoration(
+                          labelText: 'State',
+                          hintText: 'State',
+                        ),
+                        validator: (value) {
+                          if (!_useSameAddress && (value?.isEmpty ?? true)) {
+                            return 'State is required';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _billingZipController,
+                  decoration: const InputDecoration(
+                    labelText: 'ZIP Code',
+                    hintText: 'ZIP Code',
+                  ),
+                  validator: (value) {
+                    if (!_useSameAddress && (value?.isEmpty ?? true)) {
+                      return 'ZIP code is required';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+              ],
 
               // Payment Method
               Text(

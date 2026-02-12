@@ -5,6 +5,7 @@ import '../../config/theme.dart';
 import '../../models/product.dart';
 import '../../services/auth_service.dart';
 import '../../services/product_service.dart';
+import '../../services/cart_service.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -16,23 +17,39 @@ class HomeScreen extends ConsumerWidget {
       productsProvider(ProductsParams(limit: 6)),
     );
     final categoriesAsync = ref.watch(categoriesProvider);
+    final cartState = ref.watch(cartNotifierProvider);
+
+    Future<void> onRefresh() async {
+      // Refresh both products and categories
+      await Future.wait([
+        ref.refresh(productsProvider(ProductsParams(limit: 6)).future),
+        ref.refresh(categoriesProvider.future),
+      ]);
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('LuxeFinds'),
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.shopping_bag_outlined),
-            onPressed: () => context.push('/cart'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.person_outlined),
-            onPressed: () => context.push('/profile'),
-          ),
+          if (cartState.itemCount > 0)
+            Badge(
+              label: Text('${cartState.itemCount}'),
+              child: IconButton(
+                icon: const Icon(Icons.shopping_bag_outlined),
+                onPressed: () => context.push('/cart'),
+              ),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.shopping_bag_outlined),
+              onPressed: () => context.push('/cart'),
+            ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: RefreshIndicator(
+        onRefresh: onRefresh,
+        child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -189,6 +206,7 @@ class HomeScreen extends ConsumerWidget {
 
             const SizedBox(height: 24),
           ],
+        ),
         ),
       ),
     );

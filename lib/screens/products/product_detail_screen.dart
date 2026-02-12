@@ -105,7 +105,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      product.category.name,
+                                      product.category?.name ?? 'Uncategorized',
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyMedium
@@ -187,7 +187,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            product.description,
+                            product.description ?? 'No description available',
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
 

@@ -29,7 +29,7 @@ _$ProductImpl _$$ProductImplFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       name: json['name'] as String,
       price: (json['price'] as num).toDouble(),
-      description: json['description'] as String,
+      description: json['description'] as String?,
       materials: json['materials'] as String?,
       care: json['care'] as String?,
       image: json['image'] as String,
@@ -44,8 +44,10 @@ _$ProductImpl _$$ProductImplFromJson(Map<String, dynamic> json) =>
       video: json['video'] as String?,
       stock: (json['stock'] as num?)?.toInt() ?? 0,
       featured: json['featured'] as bool? ?? false,
-      categoryId: json['categoryId'] as String,
-      category: Category.fromJson(json['category'] as Map<String, dynamic>),
+      categoryId: json['categoryId'] as String?,
+      category: json['category'] == null
+          ? null
+          : Category.fromJson(json['category'] as Map<String, dynamic>),
       createdAt: json['createdAt'] == null
           ? null
           : DateTime.parse(json['createdAt'] as String),

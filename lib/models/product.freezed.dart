@@ -246,7 +246,7 @@ mixin _$Product {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   double get price => throw _privateConstructorUsedError;
-  String get description => throw _privateConstructorUsedError;
+  String? get description => throw _privateConstructorUsedError;
   String? get materials => throw _privateConstructorUsedError;
   String? get care => throw _privateConstructorUsedError;
   String get image => throw _privateConstructorUsedError;
@@ -255,8 +255,8 @@ mixin _$Product {
   String? get video => throw _privateConstructorUsedError;
   int get stock => throw _privateConstructorUsedError;
   bool get featured => throw _privateConstructorUsedError;
-  String get categoryId => throw _privateConstructorUsedError;
-  Category get category => throw _privateConstructorUsedError;
+  String? get categoryId => throw _privateConstructorUsedError;
+  Category? get category => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
 
@@ -274,7 +274,7 @@ abstract class $ProductCopyWith<$Res> {
       {String id,
       String name,
       double price,
-      String description,
+      String? description,
       String? materials,
       String? care,
       String image,
@@ -283,12 +283,12 @@ abstract class $ProductCopyWith<$Res> {
       String? video,
       int stock,
       bool featured,
-      String categoryId,
-      Category category,
+      String? categoryId,
+      Category? category,
       DateTime? createdAt,
       DateTime? updatedAt});
 
-  $CategoryCopyWith<$Res> get category;
+  $CategoryCopyWith<$Res>? get category;
 }
 
 /// @nodoc
@@ -307,7 +307,7 @@ class _$ProductCopyWithImpl<$Res, $Val extends Product>
     Object? id = null,
     Object? name = null,
     Object? price = null,
-    Object? description = null,
+    Object? description = freezed,
     Object? materials = freezed,
     Object? care = freezed,
     Object? image = null,
@@ -316,8 +316,8 @@ class _$ProductCopyWithImpl<$Res, $Val extends Product>
     Object? video = freezed,
     Object? stock = null,
     Object? featured = null,
-    Object? categoryId = null,
-    Object? category = null,
+    Object? categoryId = freezed,
+    Object? category = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
@@ -334,10 +334,10 @@ class _$ProductCopyWithImpl<$Res, $Val extends Product>
           ? _value.price
           : price // ignore: cast_nullable_to_non_nullable
               as double,
-      description: null == description
+      description: freezed == description
           ? _value.description
           : description // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       materials: freezed == materials
           ? _value.materials
           : materials // ignore: cast_nullable_to_non_nullable
@@ -370,14 +370,14 @@ class _$ProductCopyWithImpl<$Res, $Val extends Product>
           ? _value.featured
           : featured // ignore: cast_nullable_to_non_nullable
               as bool,
-      categoryId: null == categoryId
+      categoryId: freezed == categoryId
           ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
-              as String,
-      category: null == category
+              as String?,
+      category: freezed == category
           ? _value.category
           : category // ignore: cast_nullable_to_non_nullable
-              as Category,
+              as Category?,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -391,8 +391,12 @@ class _$ProductCopyWithImpl<$Res, $Val extends Product>
 
   @override
   @pragma('vm:prefer-inline')
-  $CategoryCopyWith<$Res> get category {
-    return $CategoryCopyWith<$Res>(_value.category, (value) {
+  $CategoryCopyWith<$Res>? get category {
+    if (_value.category == null) {
+      return null;
+    }
+
+    return $CategoryCopyWith<$Res>(_value.category!, (value) {
       return _then(_value.copyWith(category: value) as $Val);
     });
   }
@@ -409,7 +413,7 @@ abstract class _$$ProductImplCopyWith<$Res> implements $ProductCopyWith<$Res> {
       {String id,
       String name,
       double price,
-      String description,
+      String? description,
       String? materials,
       String? care,
       String image,
@@ -418,13 +422,13 @@ abstract class _$$ProductImplCopyWith<$Res> implements $ProductCopyWith<$Res> {
       String? video,
       int stock,
       bool featured,
-      String categoryId,
-      Category category,
+      String? categoryId,
+      Category? category,
       DateTime? createdAt,
       DateTime? updatedAt});
 
   @override
-  $CategoryCopyWith<$Res> get category;
+  $CategoryCopyWith<$Res>? get category;
 }
 
 /// @nodoc
@@ -441,7 +445,7 @@ class __$$ProductImplCopyWithImpl<$Res>
     Object? id = null,
     Object? name = null,
     Object? price = null,
-    Object? description = null,
+    Object? description = freezed,
     Object? materials = freezed,
     Object? care = freezed,
     Object? image = null,
@@ -450,8 +454,8 @@ class __$$ProductImplCopyWithImpl<$Res>
     Object? video = freezed,
     Object? stock = null,
     Object? featured = null,
-    Object? categoryId = null,
-    Object? category = null,
+    Object? categoryId = freezed,
+    Object? category = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
@@ -468,10 +472,10 @@ class __$$ProductImplCopyWithImpl<$Res>
           ? _value.price
           : price // ignore: cast_nullable_to_non_nullable
               as double,
-      description: null == description
+      description: freezed == description
           ? _value.description
           : description // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       materials: freezed == materials
           ? _value.materials
           : materials // ignore: cast_nullable_to_non_nullable
@@ -504,14 +508,14 @@ class __$$ProductImplCopyWithImpl<$Res>
           ? _value.featured
           : featured // ignore: cast_nullable_to_non_nullable
               as bool,
-      categoryId: null == categoryId
+      categoryId: freezed == categoryId
           ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
-              as String,
-      category: null == category
+              as String?,
+      category: freezed == category
           ? _value.category
           : category // ignore: cast_nullable_to_non_nullable
-              as Category,
+              as Category?,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -531,7 +535,7 @@ class _$ProductImpl implements _Product {
       {required this.id,
       required this.name,
       required this.price,
-      required this.description,
+      this.description,
       this.materials,
       this.care,
       required this.image,
@@ -540,8 +544,8 @@ class _$ProductImpl implements _Product {
       this.video,
       this.stock = 0,
       this.featured = false,
-      required this.categoryId,
-      required this.category,
+      this.categoryId,
+      this.category,
       this.createdAt,
       this.updatedAt})
       : _images = images,
@@ -557,7 +561,7 @@ class _$ProductImpl implements _Product {
   @override
   final double price;
   @override
-  final String description;
+  final String? description;
   @override
   final String? materials;
   @override
@@ -591,9 +595,9 @@ class _$ProductImpl implements _Product {
   @JsonKey()
   final bool featured;
   @override
-  final String categoryId;
+  final String? categoryId;
   @override
-  final Category category;
+  final Category? category;
   @override
   final DateTime? createdAt;
   @override
@@ -675,7 +679,7 @@ abstract class _Product implements Product {
       {required final String id,
       required final String name,
       required final double price,
-      required final String description,
+      final String? description,
       final String? materials,
       final String? care,
       required final String image,
@@ -684,8 +688,8 @@ abstract class _Product implements Product {
       final String? video,
       final int stock,
       final bool featured,
-      required final String categoryId,
-      required final Category category,
+      final String? categoryId,
+      final Category? category,
       final DateTime? createdAt,
       final DateTime? updatedAt}) = _$ProductImpl;
 
@@ -698,7 +702,7 @@ abstract class _Product implements Product {
   @override
   double get price;
   @override
-  String get description;
+  String? get description;
   @override
   String? get materials;
   @override
@@ -716,9 +720,9 @@ abstract class _Product implements Product {
   @override
   bool get featured;
   @override
-  String get categoryId;
+  String? get categoryId;
   @override
-  Category get category;
+  Category? get category;
   @override
   DateTime? get createdAt;
   @override

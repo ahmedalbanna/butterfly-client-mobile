@@ -6,12 +6,12 @@ class AppConfig {
   // API Configuration
   static const String apiBaseUrl = String.fromEnvironment(
     'API_URL',
-    defaultValue: 'https://3000-01kg82wsgx3wam97rd4g74d1h5.cloudspaces.litng.ai/api',
+    defaultValue: 'https://9002-01kg82wsgx3wam97rd4g74d1h5.cloudspaces.litng.ai/api',
   );
   
   // Request timeouts
-  static const Duration connectionTimeout = Duration(seconds: 30);
-  static const Duration receiveTimeout = Duration(seconds: 30);
+  static const Duration connectionTimeout = Duration(seconds: 60);
+  static const Duration receiveTimeout = Duration(seconds: 60);
   
   // Pagination
   static const int defaultPageSize = 20;

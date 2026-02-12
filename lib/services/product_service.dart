@@ -73,7 +73,9 @@ class ProductService {
       if (response.statusCode == 200) {
         final data = response.data!;
         if (data['success'] == true) {
-          return Product.fromJson(data['data']);
+          // Backend returns: {success: true, data: {product}}
+          final productData = data['data'] as Map<String, dynamic>;
+          return Product.fromJson(productData);
         }
       }
 
