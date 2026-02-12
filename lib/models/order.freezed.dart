@@ -260,7 +260,7 @@ mixin _$Order {
   String get id => throw _privateConstructorUsedError;
   String get status => throw _privateConstructorUsedError;
   double get total => throw _privateConstructorUsedError;
-  String? get shippingAddress => throw _privateConstructorUsedError;
+  String? get customerAddress => throw _privateConstructorUsedError;
   String? get paymentMethod => throw _privateConstructorUsedError;
   String get userId => throw _privateConstructorUsedError;
   List<OrderItem> get items => throw _privateConstructorUsedError;
@@ -281,7 +281,7 @@ abstract class $OrderCopyWith<$Res> {
       {String id,
       String status,
       double total,
-      String? shippingAddress,
+      String? customerAddress,
       String? paymentMethod,
       String userId,
       List<OrderItem> items,
@@ -305,7 +305,7 @@ class _$OrderCopyWithImpl<$Res, $Val extends Order>
     Object? id = null,
     Object? status = null,
     Object? total = null,
-    Object? shippingAddress = freezed,
+    Object? customerAddress = freezed,
     Object? paymentMethod = freezed,
     Object? userId = null,
     Object? items = null,
@@ -325,9 +325,9 @@ class _$OrderCopyWithImpl<$Res, $Val extends Order>
           ? _value.total
           : total // ignore: cast_nullable_to_non_nullable
               as double,
-      shippingAddress: freezed == shippingAddress
-          ? _value.shippingAddress
-          : shippingAddress // ignore: cast_nullable_to_non_nullable
+      customerAddress: freezed == customerAddress
+          ? _value.customerAddress
+          : customerAddress // ignore: cast_nullable_to_non_nullable
               as String?,
       paymentMethod: freezed == paymentMethod
           ? _value.paymentMethod
@@ -364,7 +364,7 @@ abstract class _$$OrderImplCopyWith<$Res> implements $OrderCopyWith<$Res> {
       {String id,
       String status,
       double total,
-      String? shippingAddress,
+      String? customerAddress,
       String? paymentMethod,
       String userId,
       List<OrderItem> items,
@@ -386,7 +386,7 @@ class __$$OrderImplCopyWithImpl<$Res>
     Object? id = null,
     Object? status = null,
     Object? total = null,
-    Object? shippingAddress = freezed,
+    Object? customerAddress = freezed,
     Object? paymentMethod = freezed,
     Object? userId = null,
     Object? items = null,
@@ -406,9 +406,9 @@ class __$$OrderImplCopyWithImpl<$Res>
           ? _value.total
           : total // ignore: cast_nullable_to_non_nullable
               as double,
-      shippingAddress: freezed == shippingAddress
-          ? _value.shippingAddress
-          : shippingAddress // ignore: cast_nullable_to_non_nullable
+      customerAddress: freezed == customerAddress
+          ? _value.customerAddress
+          : customerAddress // ignore: cast_nullable_to_non_nullable
               as String?,
       paymentMethod: freezed == paymentMethod
           ? _value.paymentMethod
@@ -441,7 +441,7 @@ class _$OrderImpl extends _Order {
       {required this.id,
       required this.status,
       required this.total,
-      this.shippingAddress,
+      this.customerAddress,
       this.paymentMethod,
       required this.userId,
       required final List<OrderItem> items,
@@ -460,7 +460,7 @@ class _$OrderImpl extends _Order {
   @override
   final double total;
   @override
-  final String? shippingAddress;
+  final String? customerAddress;
   @override
   final String? paymentMethod;
   @override
@@ -480,7 +480,7 @@ class _$OrderImpl extends _Order {
 
   @override
   String toString() {
-    return 'Order(id: $id, status: $status, total: $total, shippingAddress: $shippingAddress, paymentMethod: $paymentMethod, userId: $userId, items: $items, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Order(id: $id, status: $status, total: $total, customerAddress: $customerAddress, paymentMethod: $paymentMethod, userId: $userId, items: $items, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -491,8 +491,8 @@ class _$OrderImpl extends _Order {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.status, status) || other.status == status) &&
             (identical(other.total, total) || other.total == total) &&
-            (identical(other.shippingAddress, shippingAddress) ||
-                other.shippingAddress == shippingAddress) &&
+            (identical(other.customerAddress, customerAddress) ||
+                other.customerAddress == customerAddress) &&
             (identical(other.paymentMethod, paymentMethod) ||
                 other.paymentMethod == paymentMethod) &&
             (identical(other.userId, userId) || other.userId == userId) &&
@@ -510,7 +510,7 @@ class _$OrderImpl extends _Order {
       id,
       status,
       total,
-      shippingAddress,
+      customerAddress,
       paymentMethod,
       userId,
       const DeepCollectionEquality().hash(_items),
@@ -536,7 +536,7 @@ abstract class _Order extends Order {
       {required final String id,
       required final String status,
       required final double total,
-      final String? shippingAddress,
+      final String? customerAddress,
       final String? paymentMethod,
       required final String userId,
       required final List<OrderItem> items,
@@ -553,7 +553,7 @@ abstract class _Order extends Order {
   @override
   double get total;
   @override
-  String? get shippingAddress;
+  String? get customerAddress;
   @override
   String? get paymentMethod;
   @override
@@ -1133,7 +1133,7 @@ CreateOrderRequest _$CreateOrderRequestFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$CreateOrderRequest {
-  String get shippingAddress => throw _privateConstructorUsedError;
+  String get customerAddress => throw _privateConstructorUsedError;
   String get paymentMethod => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1148,7 +1148,7 @@ abstract class $CreateOrderRequestCopyWith<$Res> {
           CreateOrderRequest value, $Res Function(CreateOrderRequest) then) =
       _$CreateOrderRequestCopyWithImpl<$Res, CreateOrderRequest>;
   @useResult
-  $Res call({String shippingAddress, String paymentMethod});
+  $Res call({String customerAddress, String paymentMethod});
 }
 
 /// @nodoc
@@ -1164,13 +1164,13 @@ class _$CreateOrderRequestCopyWithImpl<$Res, $Val extends CreateOrderRequest>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? shippingAddress = null,
+    Object? customerAddress = null,
     Object? paymentMethod = null,
   }) {
     return _then(_value.copyWith(
-      shippingAddress: null == shippingAddress
-          ? _value.shippingAddress
-          : shippingAddress // ignore: cast_nullable_to_non_nullable
+      customerAddress: null == customerAddress
+          ? _value.customerAddress
+          : customerAddress // ignore: cast_nullable_to_non_nullable
               as String,
       paymentMethod: null == paymentMethod
           ? _value.paymentMethod
@@ -1188,7 +1188,7 @@ abstract class _$$CreateOrderRequestImplCopyWith<$Res>
       __$$CreateOrderRequestImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String shippingAddress, String paymentMethod});
+  $Res call({String customerAddress, String paymentMethod});
 }
 
 /// @nodoc
@@ -1202,13 +1202,13 @@ class __$$CreateOrderRequestImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? shippingAddress = null,
+    Object? customerAddress = null,
     Object? paymentMethod = null,
   }) {
     return _then(_$CreateOrderRequestImpl(
-      shippingAddress: null == shippingAddress
-          ? _value.shippingAddress
-          : shippingAddress // ignore: cast_nullable_to_non_nullable
+      customerAddress: null == customerAddress
+          ? _value.customerAddress
+          : customerAddress // ignore: cast_nullable_to_non_nullable
               as String,
       paymentMethod: null == paymentMethod
           ? _value.paymentMethod
@@ -1222,20 +1222,20 @@ class __$$CreateOrderRequestImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$CreateOrderRequestImpl implements _CreateOrderRequest {
   const _$CreateOrderRequestImpl(
-      {required this.shippingAddress, this.paymentMethod = 'credit_card'});
+      {required this.customerAddress, this.paymentMethod = 'credit_card'});
 
   factory _$CreateOrderRequestImpl.fromJson(Map<String, dynamic> json) =>
       _$$CreateOrderRequestImplFromJson(json);
 
   @override
-  final String shippingAddress;
+  final String customerAddress;
   @override
   @JsonKey()
   final String paymentMethod;
 
   @override
   String toString() {
-    return 'CreateOrderRequest(shippingAddress: $shippingAddress, paymentMethod: $paymentMethod)';
+    return 'CreateOrderRequest(customerAddress: $customerAddress, paymentMethod: $paymentMethod)';
   }
 
   @override
@@ -1243,15 +1243,15 @@ class _$CreateOrderRequestImpl implements _CreateOrderRequest {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$CreateOrderRequestImpl &&
-            (identical(other.shippingAddress, shippingAddress) ||
-                other.shippingAddress == shippingAddress) &&
+            (identical(other.customerAddress, customerAddress) ||
+                other.customerAddress == customerAddress) &&
             (identical(other.paymentMethod, paymentMethod) ||
                 other.paymentMethod == paymentMethod));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, shippingAddress, paymentMethod);
+  int get hashCode => Object.hash(runtimeType, customerAddress, paymentMethod);
 
   @JsonKey(ignore: true)
   @override
@@ -1270,14 +1270,14 @@ class _$CreateOrderRequestImpl implements _CreateOrderRequest {
 
 abstract class _CreateOrderRequest implements CreateOrderRequest {
   const factory _CreateOrderRequest(
-      {required final String shippingAddress,
+      {required final String customerAddress,
       final String paymentMethod}) = _$CreateOrderRequestImpl;
 
   factory _CreateOrderRequest.fromJson(Map<String, dynamic> json) =
       _$CreateOrderRequestImpl.fromJson;
 
   @override
-  String get shippingAddress;
+  String get customerAddress;
   @override
   String get paymentMethod;
   @override

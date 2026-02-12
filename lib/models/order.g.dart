@@ -28,7 +28,7 @@ _$OrderImpl _$$OrderImplFromJson(Map<String, dynamic> json) => _$OrderImpl(
       id: json['id'] as String,
       status: json['status'] as String,
       total: (json['total'] as num).toDouble(),
-      shippingAddress: json['shippingAddress'] as String?,
+      customerAddress: json['customerAddress'] as String?,
       paymentMethod: json['paymentMethod'] as String?,
       userId: json['userId'] as String,
       items: (json['items'] as List<dynamic>)
@@ -47,7 +47,7 @@ Map<String, dynamic> _$$OrderImplToJson(_$OrderImpl instance) =>
       'id': instance.id,
       'status': instance.status,
       'total': instance.total,
-      'shippingAddress': instance.shippingAddress,
+      'customerAddress': instance.customerAddress,
       'paymentMethod': instance.paymentMethod,
       'userId': instance.userId,
       'items': instance.items,
@@ -105,13 +105,13 @@ Map<String, dynamic> _$$PaginationInfoImplToJson(
 _$CreateOrderRequestImpl _$$CreateOrderRequestImplFromJson(
         Map<String, dynamic> json) =>
     _$CreateOrderRequestImpl(
-      shippingAddress: json['shippingAddress'] as String,
+      customerAddress: json['customerAddress'] as String,
       paymentMethod: json['paymentMethod'] as String? ?? 'credit_card',
     );
 
 Map<String, dynamic> _$$CreateOrderRequestImplToJson(
         _$CreateOrderRequestImpl instance) =>
     <String, dynamic>{
-      'shippingAddress': instance.shippingAddress,
+      'customerAddress': instance.customerAddress,
       'paymentMethod': instance.paymentMethod,
     };

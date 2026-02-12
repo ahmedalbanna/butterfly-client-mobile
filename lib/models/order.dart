@@ -30,7 +30,7 @@ class Order with _$Order {
     required String id,
     required String status,
     required double total,
-    String? shippingAddress,
+    String? customerAddress,
     String? paymentMethod,
     required String userId,
     required List<OrderItem> items,
@@ -103,7 +103,7 @@ class PaginationInfo with _$PaginationInfo {
 @freezed
 class CreateOrderRequest with _$CreateOrderRequest {
   const factory CreateOrderRequest({
-    required String shippingAddress,
+    required String customerAddress,
     @Default('credit_card') String paymentMethod,
   }) = _CreateOrderRequest;
 

@@ -125,7 +125,7 @@ class OrderDetailScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          order.shippingAddress ?? 'N/A',
+                          order.customerAddress ?? 'N/A',
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ],
