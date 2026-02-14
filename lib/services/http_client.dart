@@ -277,7 +277,7 @@ class HttpClient {
       }
       return token;
     } catch (e) {
-      _logger.e('Error reading access token: $e');
+      _logger.w('Error reading access token from secure storage: $e');
       return null;
     }
   }
@@ -302,6 +302,11 @@ class HttpClient {
       
       _logger.i('✓ Tokens saved successfully');
       
+      // Skip verification on web platform due to flutter_secure_storage_web limitations
+      // The read operation after write can throw OperationError in some browsers
+      // Tokens are actually saved, but verification fails
+      // See: https://github.com/mogol/flutter_secure_storage/issues/161
+      /*
       // Verify tokens were saved
       final verifyAccess = await _secureStorage.read(key: AppConfig.tokenStorageKey);
       final verifyRefresh = await _secureStorage.read(key: AppConfig.refreshTokenStorageKey);
@@ -311,6 +316,7 @@ class HttpClient {
       } else {
         _logger.e('✗ Token storage verification failed - tokens not found after save');
       }
+      */
     } catch (e) {
       _logger.e('Error saving tokens: $e');
       rethrow;
@@ -327,6 +333,11 @@ class HttpClient {
 
   /// Get refresh token from secure storage
   Future<String?> getRefreshToken() async {
-    return _secureStorage.read(key: AppConfig.refreshTokenStorageKey);
+    try {
+      return await _secureStorage.read(key: AppConfig.refreshTokenStorageKey);
+    } catch (e) {
+      _logger.w('Error reading refresh token from secure storage: $e');
+      return null;
+    }
   }
 }
