@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_client/config/theme.dart';
+import 'package:luxefinds_client/config/theme.dart';
 
 /// Custom AppBar matching LuxeFinds web design
 class LuxeAppBar extends StatelessWidget implements PreferredSizeWidget {

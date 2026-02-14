@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'package:flutter_client/config/theme.dart';
+import 'package:luxefinds_client/config/theme.dart';
 
 /// Stylized card widget matching LuxeFinds design system
 class LuxeCard extends StatelessWidget {
@@ -137,7 +137,6 @@ class ProductCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: AppTheme.backgroundColor.withOpacity(0.8),
                           borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-                          backdropFilter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
                         ),
                         child: Icon(
                           isLiked ? Icons.favorite : Icons.favorite_border,

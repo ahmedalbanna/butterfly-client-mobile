@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_client/config/theme.dart';
+import 'package:luxefinds_client/config/theme.dart';
 
 /// Primary styled button with LuxeFinds design system
 class LuxeButton extends StatefulWidget {

@@ -97,7 +97,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       style: AppTheme.textTheme.headlineSmall,
                     ),
                     const SizedBox(height: AppTheme.spacing4),
-                    if (cartState.cart != null)
+                    if (cartState.cart != null) ...[
                       ...cartState.cart!.items.map(
                           (item) => Padding(
                             padding: const EdgeInsets.only(bottom: 12),
@@ -150,7 +150,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           ),
                         ],
                       ),
-                    ],
+                    ]
                   ),
                 ),
               ),
@@ -339,8 +339,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               const SizedBox(height: AppTheme.spacing6),
             ],
           ),
-        ),
-      ),
+        ],
     );
   }
 }

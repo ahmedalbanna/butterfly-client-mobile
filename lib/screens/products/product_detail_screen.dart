@@ -152,9 +152,6 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                 style: AppTheme.textTheme.bodySmall?.copyWith(
                                   color: AppTheme.successColor,
                                 ),
-                                    ?.copyWith(
-                                  color: AppTheme.successColor,
-                                ),
                               ),
                             )
                           else
