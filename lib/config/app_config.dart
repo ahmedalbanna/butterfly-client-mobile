@@ -2,24 +2,25 @@
 class AppConfig {
   static const String appName = 'LuxeFinds Admin';
   static const String appVersion = '0.1.0';
-  
+
   // API Configuration
   static const String apiBaseUrl = String.fromEnvironment(
     'API_URL',
-    defaultValue: 'https://9002-01kg82wsgx3wam97rd4g74d1h5.cloudspaces.litng.ai/api',
+    defaultValue:
+        'https://9002-01khcnrf4jjezhw2zwv3fn8cdx.cloudspaces.litng.ai/api',
   );
-  
+
   // Request timeouts
   static const Duration connectionTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
-  
+
   // Pagination
   static const int defaultPageSize = 20;
   static const int maxPageSize = 100;
-  
+
   // Cache settings
   static const Duration cacheExpiration = Duration(hours: 1);
-  
+
   // Storage keys
   static const String tokenStorageKey = 'admin_auth_token';
   static const String refreshTokenStorageKey = 'admin_refresh_token';
