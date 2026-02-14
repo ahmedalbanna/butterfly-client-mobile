@@ -62,7 +62,11 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final productsAsync = ref.watch(adminProductsProvider(_params));
+    final authState = ref.watch(authStateProvider);
+    // Only fetch products when user is authenticated
+    final productsAsync = authState.isAuthenticated
+        ? ref.watch(adminProductsProvider(_params))
+        : const AsyncValue.loading();
 
     return Scaffold(
       appBar: AppBar(

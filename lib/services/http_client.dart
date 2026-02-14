@@ -151,18 +151,14 @@ class HttpClient {
     _pendingRequests.clear();
   }
 
-  /// Retry a request with new token
-  Future<dynamic> _retryRequest(
+  /// Retry a failed request with new token
+  Future<void> _retryRequest(
     RequestOptions requestOptions,
     ErrorInterceptorHandler handler,
   ) async {
     try {
       final token = await getAccessToken();
-      if (token == null) {
-        throw Exception('No access token available for retry');
-      }
-
-      final retryOptions = Options(
+      final opts = Options(
         method: requestOptions.method,
         headers: {
           ...requestOptions.headers,
@@ -170,16 +166,16 @@ class HttpClient {
         },
       );
 
-      final response = await _dio.request<dynamic>(
+      final response = await _dio.request(
         requestOptions.path,
+        options: opts,
         data: requestOptions.data,
         queryParameters: requestOptions.queryParameters,
-        options: retryOptions,
       );
 
       return handler.resolve(response);
     } catch (e) {
-      _logger.e('Failed to retry request: $e');
+      _logger.e('Retry request failed: $e');
       rethrow;
     }
   }
@@ -264,7 +260,18 @@ class HttpClient {
   }
 
   Future<String?> getAccessToken() async {
-    return _secureStorage.read(key: AppConfig.tokenStorageKey);
+    try {
+      final token = await _secureStorage.read(key: AppConfig.tokenStorageKey);
+      if (token != null) {
+        _logger.d('✓ Access token found (length: ${token.length})');
+      } else {
+        _logger.w('✗ Access token not found in secure storage');
+      }
+      return token;
+    } catch (e) {
+      _logger.e('Error reading access token: $e');
+      return null;
+    }
   }
 
   Future<void> saveTokens({
@@ -315,6 +322,11 @@ class HttpClient {
   }
 
   Future<String?> getRefreshToken() async {
-    return _secureStorage.read(key: AppConfig.refreshTokenStorageKey);
+    try {
+      return await _secureStorage.read(key: AppConfig.refreshTokenStorageKey);
+    } catch (e) {
+      _logger.w('Error reading refresh token from secure storage: $e');
+      return null;
+    }
   }
 }

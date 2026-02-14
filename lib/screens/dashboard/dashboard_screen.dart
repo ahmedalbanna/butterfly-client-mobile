@@ -16,7 +16,10 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
-    final analyticsAsync = ref.watch(analyticsProvider);
+    // Only fetch analytics when user is authenticated
+    final analyticsAsync = authState.isAuthenticated 
+        ? ref.watch(analyticsProvider)
+        : const AsyncValue.loading();
 
     return Scaffold(
       appBar: AppBar(

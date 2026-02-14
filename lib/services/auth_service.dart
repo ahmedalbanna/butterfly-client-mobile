@@ -21,7 +21,7 @@ class AuthService {
     required String password,
   }) async {
     try {
-      _logger.i('Admin logging in: $email');
+      _logger.i('Logging in admin user: $email');
 
       final response = await _httpClient.post<Map<String, dynamic>>(
         '/auth/login',
@@ -35,25 +35,30 @@ class AuthService {
         final data = response.data!;
         if (data['success'] == true) {
           final user = User.fromJson(data['user']);
+          final accessToken = data['accessToken'] as String?;
+          final refreshToken = data['refreshToken'] as String?;
+          
+          _logger.i('Login response received');
+          _logger.d('Access token: ${accessToken != null ? 'Present (${accessToken.length} chars)' : 'NULL'}');
+          _logger.d('Refresh token: ${refreshToken != null ? 'Present (${refreshToken.length} chars)' : 'NULL'}');
           
           // Verify admin access
           if (!user.isAdmin) {
             throw AuthException('This account does not have admin access');
           }
           
-          // Extract and save tokens
-          final accessToken = data['accessToken'];
-          final refreshToken = data['refreshToken'];
-          
-          if (accessToken == null || refreshToken == null) {
+          // Save tokens to secure storage
+          if (accessToken != null && refreshToken != null) {
+            _logger.i('Saving tokens to secure storage...');
+            await _httpClient.saveTokens(
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+            );
+            _logger.i('✓ Tokens saved successfully');
+          } else {
+            _logger.e('✗ Cannot save tokens - accessToken or refreshToken is null');
             throw AuthException('Invalid response: missing authentication tokens');
           }
-          
-          // Save tokens to secure storage
-          await _httpClient.saveTokens(
-            accessToken: accessToken,
-            refreshToken: refreshToken,
-          );
           
           _logger.i('Admin logged in successfully: ${user.email}');
           return user;
@@ -136,6 +141,26 @@ class AuthService {
       _logger.e('Logout error: $e');
       // Clear tokens even if logout endpoint fails
       await _httpClient.clearTokens();
+    }
+  }
+
+  /// Refresh authentication token
+  Future<void> refreshToken() async {
+    try {
+      _logger.i('Refreshing authentication token');
+
+      final response = await _httpClient.post<Map<String, dynamic>>(
+        '/auth/refresh',
+      );
+
+      if (response.statusCode == 200) {
+        _logger.i('Token refreshed successfully');
+      } else {
+        throw AuthException('Failed to refresh token');
+      }
+    } catch (e) {
+      _logger.e('Token refresh error: $e');
+      throw AuthException(e.toString());
     }
   }
 }

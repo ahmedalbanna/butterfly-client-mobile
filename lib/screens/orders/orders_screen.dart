@@ -60,7 +60,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final ordersAsync = ref.watch(adminOrdersProvider(_params));
+    final authState = ref.watch(authStateProvider);
+    // Only fetch orders when user is authenticated
+    final ordersAsync = authState.isAuthenticated
+        ? ref.watch(adminOrdersProvider(_params))
+        : const AsyncValue.loading();
 
     return Scaffold(
       appBar: AppBar(
