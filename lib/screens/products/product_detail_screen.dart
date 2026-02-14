@@ -5,6 +5,7 @@ import '../../config/theme.dart';
 import '../../models/product.dart';
 import '../../services/cart_service.dart';
 import '../../services/product_service.dart';
+import '../../widgets/custom/index.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
@@ -28,23 +29,16 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     final cartState = ref.watch(cartNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Product Details'),
-        elevation: 0,
+      appBar: LuxeAppBar(
+        title: 'Product Details',
+        leading: const Icon(Icons.arrow_back),
+        showDivider: true,
         actions: [
-          if (cartState.itemCount > 0)
-            Badge(
-              label: Text('${cartState.itemCount}'),
-              child: IconButton(
-                icon: const Icon(Icons.shopping_bag_outlined),
-                onPressed: () => context.push('/cart'),
-              ),
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.shopping_bag_outlined),
-              onPressed: () => context.push('/cart'),
-            ),
+          AppBarAction(
+            icon: Icons.shopping_bag_outlined,
+            badge: cartState.itemCount > 0 ? '${cartState.itemCount}' : null,
+            onPressed: () => context.push('/cart'),
+          ),
         ],
       ),
       body: productAsync.when(
@@ -86,7 +80,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 
                     // Product Info
                     Padding(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(AppTheme.spacing6),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -99,17 +93,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   children: [
                                     Text(
                                       product.name,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .displaySmall,
+                                      style: AppTheme.textTheme.displaySmall?.copyWith(
+                                        color: AppTheme.primaryColor,
+                                      ),
                                     ),
-                                    const SizedBox(height: 8),
+                                    const SizedBox(height: AppTheme.spacing2),
                                     Text(
                                       product.category?.name ?? 'Uncategorized',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(
+                                      style: AppTheme.textTheme.bodyMedium?.copyWith(
                                         color: AppTheme.textSecondaryColor,
                                       ),
                                     ),
@@ -118,19 +109,20 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               ),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
+                                  horizontal: AppTheme.spacing4,
+                                  vertical: AppTheme.spacing2,
                                 ),
                                 decoration: BoxDecoration(
                                   color: AppTheme.surfaceColor,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                                  border: Border.all(
+                                    color: AppTheme.primaryColor,
+                                    width: 1,
+                                  ),
                                 ),
                                 child: Text(
                                   '\$${product.price.toStringAsFixed(2)}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall
-                                      ?.copyWith(
+                                  style: AppTheme.textTheme.headlineSmall?.copyWith(
                                     color: AppTheme.primaryColor,
                                   ),
                                 ),
@@ -138,22 +130,28 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             ],
                           ),
 
-                          const SizedBox(height: 24),
+                          const SizedBox(height: AppTheme.spacing6),
 
                           // Stock Status
                           if (product.stock > 0)
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
+                                horizontal: AppTheme.spacing3,
+                                vertical: AppTheme.spacing2,
                               ),
                               decoration: BoxDecoration(
-                                color: AppTheme.successColor.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(8),
+                                color: AppTheme.successColor.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                                border: Border.all(
+                                  color: AppTheme.successColor,
+                                  width: 0.5,
+                                ),
                               ),
                               child: Text(
                                 '${product.stock} items in stock',
-                                style: Theme.of(context).textTheme.bodySmall
+                                style: AppTheme.textTheme.bodySmall?.copyWith(
+                                  color: AppTheme.successColor,
+                                ),
                                     ?.copyWith(
                                   color: AppTheme.successColor,
                                 ),

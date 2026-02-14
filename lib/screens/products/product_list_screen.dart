@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../services/product_service.dart';
+import '../../widgets/custom/index.dart';
 
 class ProductListScreen extends ConsumerStatefulWidget {
   final String? categoryId;
@@ -41,31 +42,22 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     final categoriesAsync = ref.watch(categoriesProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Products'),
-        elevation: 0,
+      appBar: LuxeAppBar(
+        title: 'Shop Collection',
+        leading: const Icon(Icons.arrow_back),
+        showDivider: true,
       ),
       body: Column(
         children: [
           // Search Bar
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: SearchBar(
+            padding: const EdgeInsets.all(AppTheme.spacing4),
+            child: SimpleInput(
               controller: _searchController,
-              hintText: 'Search products...',
-              leading: const Icon(Icons.search),
-              trailing: [
-                if (_searchController.text.isNotEmpty)
-                  IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      _searchController.clear();
-                      setState(() {
-                        _params = _params.copyWith(search: null);
-                      });
-                    },
-                  ),
-              ],
+              hint: 'Search products...',
+              keyboardType: TextInputType.text,
+              prefixIcon: Icons.search,
+              suffixIcon: _searchController.text.isNotEmpty ? Icons.clear : null,
               onChanged: (value) {
                 setState(() {
                   _params = _params.copyWith(
@@ -81,53 +73,92 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
           categoriesAsync.when(
             data: (categories) {
               return SizedBox(
-                height: 50,
+                height: 65,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacing4,
+                    vertical: AppTheme.spacing2,
+                  ),
                   itemCount: categories.length + 1,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  separatorBuilder: (_, __) => const SizedBox(
+                    width: AppTheme.spacing2,
+                  ),
                   itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return FilterChip(
-                        label: const Text('All'),
-                        selected: widget.categoryId == null,
-                        onSelected: (selected) {
-                          setState(() {
+                    final isAll = index == 0;
+                    final isSelected = isAll
+                        ? widget.categoryId == null
+                        : widget.categoryId == categories[index - 1].id;
+                    final label = isAll ? 'All' : categories[index - 1].name;
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          if (isAll) {
                             _params = _params.copyWith(
                               categoryId: null,
                               page: 1,
                             );
-                          });
-                        },
-                      );
-                    }
-
-                    final category = categories[index - 1];
-                    return FilterChip(
-                      label: Text(category.name),
-                      selected: widget.categoryId == category.id,
-                      onSelected: (selected) {
-                        setState(() {
-                          _params = _params.copyWith(
-                            categoryId: selected ? category.id : null,
-                            page: 1,
-                          );
+                          } else {
+                            _params = _params.copyWith(
+                              categoryId: categories[index - 1].id,
+                              page: 1,
+                            );
+                          }
                         });
                       },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacing4,
+                          vertical: AppTheme.spacing2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppTheme.primaryColor
+                              : AppTheme.surfaceColor,
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusLarge,
+                          ),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppTheme.primaryColor
+                                : AppTheme.borderColor,
+                            width: 1,
+                          ),
+                          boxShadow: isSelected
+                              ? AppTheme.shadowSmall
+                              : AppTheme.shadowNone,
+                        ),
+                        child: Center(
+                          child: Text(
+                            label,
+                            style: AppTheme.textTheme.labelLarge?.copyWith(
+                              color: isSelected
+                                  ? AppTheme.backgroundColor
+                                  : AppTheme.textColor,
+                            ),
+                          ),
+                        ),
+                      ),
                     );
                   },
                 ),
               );
             },
             loading: () => const SizedBox(
-              height: 50,
-              child: Center(child: CircularProgressIndicator()),
+              height: 65,
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppTheme.primaryColor,
+                  ),
+                ),
+              ),
             ),
-            error: (error, stack) => const SizedBox(height: 50),
+            error: (error, stack) => const SizedBox(height: 65),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacing4),
 
           // Products Grid
           Expanded(
@@ -138,15 +169,20 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.shopping_bag_outlined,
                           size: 64,
                           color: AppTheme.textSecondaryColor,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppTheme.spacing4),
                         Text(
                           'No products found',
-                          style: Theme.of(context).textTheme.headlineSmall,
+                          style: AppTheme.textTheme.headlineSmall,
+                        ),
+                        const SizedBox(height: AppTheme.spacing3),
+                        Text(
+                          'Try adjusting your filters or search',
+                          style: AppTheme.textTheme.bodySmall,
                         ),
                       ],
                     ),
@@ -154,101 +190,40 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                 }
 
                 return GridView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppTheme.spacing4),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 0.7,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
+                    childAspectRatio: 0.65,
+                    crossAxisSpacing: AppTheme.spacing4,
+                    mainAxisSpacing: AppTheme.spacing4,
                   ),
                   itemCount: response.data.length,
                   itemBuilder: (context, index) {
                     final product = response.data[index];
-                    return GestureDetector(
+                    return ProductCard(
+                      imageUrl: product.image,
+                      title: product.name,
+                      price: product.price,
+                      category: product.category?.name,
                       onTap: () => context.push('/products/${product.id}'),
-                      child: Card(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: AppTheme.surfaceColor,
-                                  image: DecorationImage(
-                                    image: NetworkImage(product.image),
-                                    fit: BoxFit.cover,
-                                    onError: (exception, stackTrace) {},
-                                  ),
-                                ),
-                                child: Stack(
-                                  children: [
-                                    if (product.featured)
-                                      Positioned(
-                                        top: 8,
-                                        right: 8,
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: AppTheme.primaryColor,
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                          child: Text(
-                                            'Featured',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .labelSmall
-                                                ?.copyWith(
-                                              color: AppTheme.backgroundColor,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    product.name,
-                                    style:
-                                    Theme.of(context).textTheme.labelLarge,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '\$${product.price.toStringAsFixed(2)}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(
-                                      color: AppTheme.primaryColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                     );
                   },
                 );
               },
               loading: () => const Center(
-                child: CircularProgressIndicator(),
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppTheme.primaryColor,
+                  ),
+                ),
               ),
               error: (error, stack) => Center(
-                child: Text('Error: $error'),
+                child: Text(
+                  'Error loading products',
+                  style: AppTheme.textTheme.bodySmall?.copyWith(
+                    color: AppTheme.errorColor,
+                  ),
+                ),
               ),
             ),
           ),

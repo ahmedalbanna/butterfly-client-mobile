@@ -6,6 +6,7 @@ import '../../models/product.dart';
 import '../../services/auth_service.dart';
 import '../../services/product_service.dart';
 import '../../services/cart_service.dart';
+import '../../widgets/custom/index.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -28,23 +29,20 @@ class HomeScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('LuxeFinds'),
-        elevation: 0,
+      appBar: LuxeAppBar(
+        title: 'LuxeFinds',
+        centerTitle: true,
         actions: [
-          if (cartState.itemCount > 0)
-            Badge(
-              label: Text('${cartState.itemCount}'),
-              child: IconButton(
-                icon: const Icon(Icons.shopping_bag_outlined),
-                onPressed: () => context.push('/cart'),
-              ),
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.shopping_bag_outlined),
-              onPressed: () => context.push('/cart'),
-            ),
+          AppBarAction(
+            icon: Icons.shopping_bag_outlined,
+            badge: cartState.itemCount > 0 ? '${cartState.itemCount}' : null,
+            onPressed: () => context.push('/cart'),
+          ),
+          const SizedBox(width: AppTheme.spacing2),
+          AppBarAction(
+            icon: Icons.person_outline,
+            onPressed: () => context.push('/profile'),
+          ),
         ],
       ),
       body: RefreshIndicator(
@@ -55,15 +53,21 @@ class HomeScreen extends ConsumerWidget {
           children: [
             // Hero Section
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(AppTheme.spacing6),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppTheme.surfaceColor,
+                    AppTheme.surfaceColor.withOpacity(0.8),
                     AppTheme.backgroundColor,
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
+                ),
+                border: Border(
+                  bottom: BorderSide(
+                    color: AppTheme.borderColor,
+                    width: 0.5,
+                  ),
                 ),
               ),
               child: Column(
@@ -71,20 +75,24 @@ class HomeScreen extends ConsumerWidget {
                 children: [
                   Text(
                     'Welcome, ${authState.user?.name ?? 'Guest'}',
-                    style: Theme.of(context).textTheme.displaySmall,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Discover premium luxury accessories',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppTheme.textSecondaryColor,
+                    style: AppTheme.textTheme.displaySmall?.copyWith(
+                      color: AppTheme.primaryColor,
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
+                  const SizedBox(height: AppTheme.spacing3),
+                  Text(
+                    'Discover exquisite luxury accessories curated just for you',
+                    style: AppTheme.textTheme.bodyLarge?.copyWith(
+                      color: AppTheme.textSecondaryColor,
+                      height: 1.6,
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spacing6),
+                  LuxeButton(
+                    label: 'Explore Collection',
+                    icon: Icons.shopping_bag_outlined,
+                    variant: ButtonVariant.primary,
                     onPressed: () => context.push('/products'),
-                    icon: const Icon(Icons.shopping_bag_outlined),
-                    label: const Text('Shop Now'),
                   ),
                 ],
               ),
@@ -92,23 +100,28 @@ class HomeScreen extends ConsumerWidget {
 
             // Categories Section
             Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacing6,
+                vertical: AppTheme.spacing6,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Categories',
-                    style: Theme.of(context).textTheme.headlineSmall,
+                    'Shop by Category',
+                    style: AppTheme.textTheme.headlineSmall,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppTheme.spacing4),
                   categoriesAsync.when(
                     data: (categories) {
                       return SizedBox(
-                        height: 100,
+                        height: 120,
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
                           itemCount: categories.length,
-                          separatorBuilder: (_, __) => const SizedBox(width: 12),
+                          separatorBuilder: (_, __) => const SizedBox(
+                            width: AppTheme.spacing3,
+                          ),
                           itemBuilder: (context, index) {
                             final category = categories[index];
                             return GestureDetector(
@@ -116,20 +129,36 @@ class HomeScreen extends ConsumerWidget {
                                 '/products?categoryId=${category.id}',
                               ),
                               child: Container(
-                                padding: const EdgeInsets.all(16),
+                                constraints: const BoxConstraints(minWidth: 100),
+                                padding: const EdgeInsets.all(AppTheme.spacing4),
                                 decoration: BoxDecoration(
                                   color: AppTheme.surfaceColor,
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusLarge,
+                                  ),
                                   border: Border.all(
-                                    color: AppTheme.primaryColor.withOpacity(0.3),
+                                    color: AppTheme.borderColor,
+                                    width: 1,
                                   ),
+                                  boxShadow: AppTheme.shadowSmall,
                                 ),
-                                child: Center(
-                                  child: Text(
-                                    category.name,
-                                    style: Theme.of(context).textTheme.labelLarge,
-                                    textAlign: TextAlign.center,
-                                  ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.category_outlined,
+                                      color: AppTheme.primaryColor,
+                                      size: 28,
+                                    ),
+                                    const SizedBox(height: AppTheme.spacing2),
+                                    Text(
+                                      category.name,
+                                      style: AppTheme.textTheme.labelLarge,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
@@ -138,11 +167,17 @@ class HomeScreen extends ConsumerWidget {
                       );
                     },
                     loading: () => const Center(
-                      child: CircularProgressIndicator(),
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppTheme.primaryColor,
+                        ),
+                      ),
                     ),
                     error: (error, stack) => Text(
-                      'Error loading categories: $error',
-                      style: const TextStyle(color: AppTheme.errorColor),
+                      'Error loading categories',
+                      style: AppTheme.textTheme.bodySmall?.copyWith(
+                        color: AppTheme.errorColor,
+                      ),
                     ),
                   ),
                 ],
@@ -151,7 +186,10 @@ class HomeScreen extends ConsumerWidget {
 
             // Featured Products Section
             Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacing6,
+                vertical: AppTheme.spacing6,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -159,16 +197,21 @@ class HomeScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Featured Products',
-                        style: Theme.of(context).textTheme.headlineSmall,
+                        'Featured Collection',
+                        style: AppTheme.textTheme.headlineSmall,
                       ),
                       TextButton(
                         onPressed: () => context.push('/products'),
-                        child: const Text('View All'),
+                        child: Text(
+                          'View All',
+                          style: AppTheme.textTheme.labelLarge?.copyWith(
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppTheme.spacing4),
                   productsAsync.when(
                     data: (response) {
                       final products = response.data;
@@ -178,133 +221,49 @@ class HomeScreen extends ConsumerWidget {
                         gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 0.7,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
+                          childAspectRatio: 0.65,
+                          crossAxisSpacing: AppTheme.spacing4,
+                          mainAxisSpacing: AppTheme.spacing4,
                         ),
                         itemCount: products.length,
                         itemBuilder: (context, index) {
                           final product = products[index];
-                          return ProductCard(product: product);
+                          return ProductCard(
+                            imageUrl: product.image,
+                            title: product.name,
+                            price: product.price,
+                            category: product.category?.name,
+                            onTap: () => context.push(
+                              '/products/${product.id}',
+                            ),
+                          );
                         },
                       );
                     },
                     loading: () => const SizedBox(
-                      height: 300,
+                      height: 400,
                       child: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    ),
-                    error: (error, stack) => Text(
-                      'Error loading products: $error',
-                      style: const TextStyle(color: AppTheme.errorColor),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-          ],
-        ),
-        ),
-      ),
-    );
-  }
-}
-
-class ProductCard extends StatelessWidget {
-  final Product product;
-
-  const ProductCard({
-    Key? key,
-    required this.product,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.push('/products/${product.id}'),
-      child: Card(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Product Image
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceColor,
-                  image: DecorationImage(
-                    image: NetworkImage(product.image),
-                    fit: BoxFit.cover,
-                    onError: (exception, stackTrace) {},
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    if (product.featured)
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            'Featured',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: AppTheme.backgroundColor,
-                            ),
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppTheme.primaryColor,
                           ),
                         ),
                       ),
-                  ],
-                ),
-              ),
-            ),
-            // Product Info
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product.name,
-                    style: Theme.of(context).textTheme.labelLarge,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '\$${product.price.toStringAsFixed(2)}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.primaryColor,
-                      fontWeight: FontWeight.bold,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (product.stock > 0)
-                    Text(
-                      '${product.stock} in stock',
-                      style: Theme.of(context).textTheme.labelSmall,
-                    )
-                  else
-                    Text(
-                      'Out of stock',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    error: (error, stack) => Text(
+                      'Error loading products',
+                      style: AppTheme.textTheme.bodySmall?.copyWith(
                         color: AppTheme.errorColor,
                       ),
                     ),
+                  ),
                 ],
               ),
             ),
+
+            const SizedBox(height: AppTheme.spacing6),
           ],
+        ),
         ),
       ),
     );

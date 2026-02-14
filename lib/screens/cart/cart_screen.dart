@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../models/cart.dart';
 import '../../services/cart_service.dart';
+import '../../widgets/custom/index.dart';
 
 class CartScreen extends ConsumerWidget {
   const CartScreen({Key? key}) : super(key: key);
@@ -13,29 +14,36 @@ class CartScreen extends ConsumerWidget {
     final cartState = ref.watch(cartNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Shopping Cart'),
-        elevation: 0,
+      appBar: LuxeAppBar(
+        title: 'Shopping Cart',
+        leading: const Icon(Icons.arrow_back),
+        showDivider: true,
       ),
       body: cartState.isEmpty
           ? Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.shopping_bag_outlined,
               size: 64,
               color: AppTheme.textSecondaryColor,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppTheme.spacing4),
             Text(
               'Your cart is empty',
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: AppTheme.textTheme.headlineSmall,
             ),
-            const SizedBox(height: 24),
-            ElevatedButton(
+            const SizedBox(height: AppTheme.spacing3),
+            Text(
+              'Add items to get started',
+              style: AppTheme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: AppTheme.spacing6),
+            LuxeButton(
+              label: 'Continue Shopping',
               onPressed: () => context.go('/products'),
-              child: const Text('Continue Shopping'),
+              variant: ButtonVariant.primary,
             ),
           ],
         ),
@@ -97,72 +105,67 @@ class CartScreen extends ConsumerWidget {
                 // Summary
                 if (cartState.cart != null && cartState.cart!.items.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Subtotal',
-                                  style: Theme.of(context).textTheme.bodyLarge,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacing4,
+                      vertical: AppTheme.spacing6,
+                    ),
+                    child: LuxeCard(
+                      padding: const EdgeInsets.all(AppTheme.spacing4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Subtotal',
+                                style: AppTheme.textTheme.bodyLarge,
+                              ),
+                              Text(
+                                '\$${cartState.total.toStringAsFixed(2)}',
+                                style: AppTheme.textTheme.bodyLarge,
+                              ),
+                            ],
+                          ),
+                          Divider(
+                            height: AppTheme.spacing6,
+                            color: AppTheme.dividerColor,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Shipping',
+                                style: AppTheme.textTheme.bodyLarge,
+                              ),
+                              Text(
+                                'FREE',
+                                style: AppTheme.textTheme.bodyLarge?.copyWith(
+                                  color: AppTheme.successColor,
                                 ),
-                                Text(
-                                  '\$${cartState.total.toStringAsFixed(2)}',
-                                  style: Theme.of(context).textTheme.bodyLarge,
+                              ),
+                            ],
+                          ),
+                          Divider(
+                            height: AppTheme.spacing6,
+                            color: AppTheme.dividerColor,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Total',
+                                style: AppTheme.textTheme.headlineSmall,
+                              ),
+                              Text(
+                                '\$${cartState.total.toStringAsFixed(2)}',
+                                style: AppTheme.textTheme.headlineSmall?.copyWith(
+                                  color: AppTheme.primaryColor,
                                 ),
-                              ],
-                            ),
-                            const Divider(height: 16),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Shipping',
-                                  style: Theme.of(context).textTheme.bodyLarge,
-                                ),
-                                Text(
-                                  'FREE',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.copyWith(
-                                    color: AppTheme.successColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const Divider(height: 16),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Total',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall
-                                      ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  '\$${cartState.total.toStringAsFixed(2)}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall
-                                      ?.copyWith(
-                                    color: AppTheme.primaryColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -177,18 +180,20 @@ class CartScreen extends ConsumerWidget {
               left: 0,
               right: 0,
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppTheme.spacing4),
                 decoration: BoxDecoration(
                   color: AppTheme.backgroundColor,
                   border: Border(
                     top: BorderSide(
-                      color: AppTheme.textSecondaryColor.withOpacity(0.2),
+                      color: AppTheme.borderColor,
+                      width: 0.5,
                     ),
                   ),
                 ),
-                child: ElevatedButton(
+                child: LuxeButton(
+                  label: 'Proceed to Checkout',
                   onPressed: () => context.push('/checkout'),
-                  child: const Text('Proceed to Checkout'),
+                  variant: ButtonVariant.primary,
                 ),
               ),
             ),
@@ -212,10 +217,13 @@ class CartItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spacing4,
+        vertical: AppTheme.spacing2,
+      ),
+      child: LuxeCard(
+        padding: const EdgeInsets.all(AppTheme.spacing4),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -225,7 +233,7 @@ class CartItemTile extends StatelessWidget {
               height: 100,
               decoration: BoxDecoration(
                 color: AppTheme.surfaceColor,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
                 image: DecorationImage(
                   image: NetworkImage(cartItem.product.image),
                   fit: BoxFit.cover,
@@ -234,7 +242,7 @@ class CartItemTile extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(width: 12),
+            const SizedBox(width: AppTheme.spacing4),
 
             // Product Info
             Expanded(
@@ -243,14 +251,14 @@ class CartItemTile extends StatelessWidget {
                 children: [
                   Text(
                     cartItem.product.name,
-                    style: Theme.of(context).textTheme.labelLarge,
+                    style: AppTheme.textTheme.labelLarge,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppTheme.spacing2),
                   Text(
                     '\$${cartItem.product.price.toStringAsFixed(2)}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    style: AppTheme.textTheme.bodyMedium?.copyWith(
                       color: AppTheme.primaryColor,
                       fontWeight: FontWeight.bold,
                     ),
@@ -259,7 +267,7 @@ class CartItemTile extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(width: 12),
+            const SizedBox(width: AppTheme.spacing4),
 
             // Quantity and Remove
             Column(
@@ -269,9 +277,10 @@ class CartItemTile extends StatelessWidget {
                 Container(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: AppTheme.textSecondaryColor.withOpacity(0.2),
+                      color: AppTheme.borderColor,
+                      width: 1,
                     ),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,

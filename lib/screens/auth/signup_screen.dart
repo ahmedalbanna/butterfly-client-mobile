@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../services/auth_service.dart';
+import '../../widgets/custom/index.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({Key? key}) : super(key: key);
@@ -59,39 +60,39 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final authState = ref.watch(authStateProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Account'),
-        elevation: 0,
+      appBar: LuxeAppBar(
+        title: 'Sign Up',
+        leading: const Icon(Icons.arrow_back),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppTheme.spacing6),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 32),
+              const SizedBox(height: AppTheme.spacing7),
               Text(
                 'Join LuxeFinds',
-                style: Theme.of(context).textTheme.displaySmall,
+                style: AppTheme.textTheme.displaySmall?.copyWith(
+                  color: AppTheme.primaryColor,
+                ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.spacing3),
               Text(
-                'Create your account to get started',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                'Create your account to explore luxury',
+                style: AppTheme.textTheme.bodyMedium?.copyWith(
                   color: AppTheme.textSecondaryColor,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 40),
-              TextFormField(
+              const SizedBox(height: AppTheme.spacing7),
+              LuxeInput(
+                label: 'Full Name',
+                hint: 'John Doe',
                 controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'Full Name',
-                  prefixIcon: const Icon(Icons.person_outlined),
-                  hintText: 'Enter your full name',
-                ),
+                prefixIcon: Icons.person_outlined,
                 validator: (value) {
                   if (value?.isEmpty ?? true) {
                     return 'Name is required';
@@ -102,15 +103,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
-              TextFormField(
+              const SizedBox(height: AppTheme.spacing6),
+              LuxeInput(
+                label: 'Email Address',
+                hint: 'your@email.com',
                 controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: const Icon(Icons.email_outlined),
-                  hintText: 'Enter your email',
-                ),
                 keyboardType: TextInputType.emailAddress,
+                prefixIcon: Icons.email_outlined,
                 validator: (value) {
                   if (value?.isEmpty ?? true) {
                     return 'Email is required';
@@ -121,27 +120,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
-              TextFormField(
+              const SizedBox(height: AppTheme.spacing6),
+              LuxeInput(
+                label: 'Password',
+                hint: '••••••••',
                 controller: _passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  prefixIcon: const Icon(Icons.lock_outlined),
-                  hintText: 'Enter your password',
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                  ),
-                ),
-                obscureText: _obscurePassword,
+                obscureText: true,
+                prefixIcon: Icons.lock_outlined,
+                suffixIcon: Icons.visibility,
                 validator: (value) {
                   if (value?.isEmpty ?? true) {
                     return 'Password is required';
@@ -152,27 +138,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
-              TextFormField(
+              const SizedBox(height: AppTheme.spacing6),
+              LuxeInput(
+                label: 'Confirm Password',
+                hint: '••••••••',
                 controller: _confirmPasswordController,
-                decoration: InputDecoration(
-                  labelText: 'Confirm Password',
-                  prefixIcon: const Icon(Icons.lock_outlined),
-                  hintText: 'Confirm your password',
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureConfirmPassword
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureConfirmPassword = !_obscureConfirmPassword;
-                      });
-                    },
-                  ),
-                ),
-                obscureText: _obscureConfirmPassword,
+                obscureText: true,
+                prefixIcon: Icons.lock_outlined,
+                suffixIcon: Icons.visibility,
                 validator: (value) {
                   if (value?.isEmpty ?? true) {
                     return 'Please confirm your password';
@@ -183,35 +156,26 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: authState.isLoading ? null : _handleSignup,
-                child: authState.isLoading
-                    ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppTheme.backgroundColor,
-                    ),
-                  ),
-                )
-                    : const Text('Create Account'),
+              const SizedBox(height: AppTheme.spacing7),
+              LuxeButton(
+                label: authState.isLoading ? 'Creating Account...' : 'Create Account',
+                isLoading: authState.isLoading,
+                onPressed: authState.isLoading ? () {} : _handleSignup,
+                variant: ButtonVariant.primary,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.spacing6),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     'Already have an account? ',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: AppTheme.textTheme.bodyMedium,
                   ),
                   GestureDetector(
                     onTap: () => context.pop(),
                     child: Text(
                       'Sign In',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      style: AppTheme.textTheme.bodyMedium?.copyWith(
                         color: AppTheme.primaryColor,
                         fontWeight: FontWeight.bold,
                       ),

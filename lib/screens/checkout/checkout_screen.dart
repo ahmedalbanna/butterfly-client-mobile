@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../services/cart_service.dart';
 import '../../services/order_service.dart';
+import '../../widgets/custom/index.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({Key? key}) : super(key: key);
@@ -73,31 +74,31 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final checkoutState = ref.watch(checkoutNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Checkout'),
-        elevation: 0,
+      appBar: LuxeAppBar(
+        title: 'Checkout',
+        leading: const Icon(Icons.arrow_back),
+        showDivider: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppTheme.spacing4),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Order Summary
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Order Summary',
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                      const SizedBox(height: 16),
-                      if (cartState.cart != null)
-                        ...cartState.cart!.items.map(
+              LuxeCard(
+                padding: const EdgeInsets.all(AppTheme.spacing4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Order Summary',
+                      style: AppTheme.textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: AppTheme.spacing4),
+                    if (cartState.cart != null)
+                      ...cartState.cart!.items.map(
                           (item) => Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: Row(
@@ -154,21 +155,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTheme.spacing6),
 
               // Shipping Address
               Text(
                 'Shipping Address',
-                style: Theme.of(context).textTheme.headlineSmall,
+                style: AppTheme.textTheme.headlineSmall,
               ),
-              const SizedBox(height: 16),
-              TextFormField(
+              const SizedBox(height: AppTheme.spacing4),
+              LuxeInput(
+                label: 'Street Address',
+                hint: '123 Main Street',
                 controller: _addressController,
-                decoration: const InputDecoration(
-                  labelText: 'Street Address',
-                  prefixIcon: Icon(Icons.location_on_outlined),
-                  hintText: 'Enter your street address',
-                ),
+                prefixIcon: Icons.location_on_outlined,
                 validator: (value) {
                   if (value?.isEmpty ?? true) {
                     return 'Street address is required';
@@ -176,16 +175,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.spacing4),
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: LuxeInput(
+                      label: 'City',
+                      hint: 'City',
                       controller: _cityController,
-                      decoration: const InputDecoration(
-                        labelText: 'City',
-                        hintText: 'City',
-                      ),
                       validator: (value) {
                         if (value?.isEmpty ?? true) {
                           return 'City is required';
@@ -194,14 +191,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppTheme.spacing4),
                   Expanded(
-                    child: TextFormField(
+                    child: LuxeInput(
+                      label: 'State',
+                      hint: 'State',
                       controller: _stateController,
-                      decoration: const InputDecoration(
-                        labelText: 'State',
-                        hintText: 'State',
-                      ),
                       validator: (value) {
                         if (value?.isEmpty ?? true) {
                           return 'State is required';
@@ -212,13 +207,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              TextFormField(
+              const SizedBox(height: AppTheme.spacing4),
+              LuxeInput(
+                label: 'ZIP Code',
+                hint: '12345',
                 controller: _zipController,
-                decoration: const InputDecoration(
-                  labelText: 'ZIP Code',
-                  hintText: 'ZIP Code',
-                ),
+                keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value?.isEmpty ?? true) {
                     return 'ZIP code is required';
@@ -227,102 +221,122 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 },
               ),
 
+              const SizedBox(height: AppTheme.spacing6),
 
               // Payment Method
               Text(
                 'Payment Method',
-                style: Theme.of(context).textTheme.headlineSmall,
+                style: AppTheme.textTheme.headlineSmall,
               ),
-              const SizedBox(height: 16),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      RadioListTile<String>(
-                        title: const Text('Credit Card'),
-                        subtitle: const Text('Visa, Mastercard, American Express'),
-                        value: 'credit_card',
-                        groupValue: _paymentMethod,
-                        onChanged: (value) {
-                          setState(() {
-                            _paymentMethod = value!;
-                          });
-                        },
+              const SizedBox(height: AppTheme.spacing4),
+              LuxeCard(
+                padding: const EdgeInsets.all(AppTheme.spacing4),
+                child: Column(
+                  children: [
+                    RadioListTile<String>(
+                      title: Text(
+                        'Credit Card',
+                        style: AppTheme.textTheme.bodyLarge,
                       ),
-                      RadioListTile<String>(
-                        title: const Text('Debit Card'),
-                        subtitle: const Text('Debit card payments'),
-                        value: 'debit_card',
-                        groupValue: _paymentMethod,
-                        onChanged: (value) {
-                          setState(() {
-                            _paymentMethod = value!;
-                          });
-                        },
+                      subtitle: Text(
+                        'Visa, Mastercard, American Express',
+                        style: AppTheme.textTheme.bodySmall,
                       ),
-                      RadioListTile<String>(
-                        title: const Text('PayPal'),
-                        subtitle: const Text('PayPal account'),
-                        value: 'paypal',
-                        groupValue: _paymentMethod,
-                        onChanged: (value) {
-                          setState(() {
-                            _paymentMethod = value!;
-                          });
-                        },
+                      value: 'credit_card',
+                      groupValue: _paymentMethod,
+                      activeColor: AppTheme.primaryColor,
+                      onChanged: (value) {
+                        setState(() {
+                          _paymentMethod = value!;
+                        });
+                      },
+                    ),
+                    RadioListTile<String>(
+                      title: Text(
+                        'Debit Card',
+                        style: AppTheme.textTheme.bodyLarge,
+                      ),
+                      subtitle: Text(
+                        'Debit card payments',
+                        style: AppTheme.textTheme.bodySmall,
+                      ),
+                      value: 'debit_card',
+                      groupValue: _paymentMethod,
+                      activeColor: AppTheme.primaryColor,
+                      onChanged: (value) {
+                        setState(() {
+                          _paymentMethod = value!;
+                        });
+                      },
+                    ),
+                    RadioListTile<String>(
+                      title: Text(
+                        'PayPal',
+                        style: AppTheme.textTheme.bodyLarge,
+                      ),
+                      subtitle: Text(
+                        'PayPal account',
+                        style: AppTheme.textTheme.bodySmall,
+                      ),
+                      value: 'paypal',
+                      groupValue: _paymentMethod,
+                      activeColor: AppTheme.primaryColor,
+                      onChanged: (value) {
+                        setState(() {
+                          _paymentMethod = value!;
+                        });
+                      },
                       ),
                     ],
                   ),
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTheme.spacing6),
 
               // Terms and Conditions
-              CheckboxListTile(
-                value: _agreeToTerms,
-                onChanged: (value) {
-                  setState(() {
-                    _agreeToTerms = value ?? false;
-                  });
-                },
-                title: const Text('I agree to the terms and conditions'),
-                controlAffinity: ListTileControlAffinity.leading,
-              ),
-
-              const SizedBox(height: 24),
-
-              // Place Order Button
-              ElevatedButton(
-                onPressed: checkoutState.isLoading ? null : _handleCheckout,
-                child: checkoutState.isLoading
-                    ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppTheme.backgroundColor,
+              Row(
+                children: [
+                  Checkbox(
+                    value: _agreeToTerms,
+                    onChanged: (value) {
+                      setState(() {
+                        _agreeToTerms = value ?? false;
+                      });
+                    },
+                  ),
+                  Expanded(
+                    child: Text(
+                      'I agree to the terms and conditions',
+                      style: AppTheme.textTheme.bodyMedium,
                     ),
                   ),
-                )
-                    : const Text('Place Order'),
+                ],
+              ),
+
+              const SizedBox(height: AppTheme.spacing6),
+
+              // Place Order Button
+              LuxeButton(
+                label: checkoutState.isLoading ? 'Processing...' : 'Place Order',
+                isLoading: checkoutState.isLoading,
+                onPressed: checkoutState.isLoading ? () {} : _handleCheckout,
+                variant: ButtonVariant.primary,
               ),
 
               if (checkoutState.error != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: 16),
+                  padding: const EdgeInsets.only(top: AppTheme.spacing4),
                   child: Text(
                     checkoutState.error!,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    style: AppTheme.textTheme.bodySmall?.copyWith(
                       color: AppTheme.errorColor,
                     ),
                     textAlign: TextAlign.center,
                   ),
                 ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTheme.spacing6),
             ],
           ),
         ),

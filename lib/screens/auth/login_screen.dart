@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../services/auth_service.dart';
+import '../../widgets/custom/index.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -53,40 +54,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authStateProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-        elevation: 0,
+      appBar: LuxeAppBar(
+        title: 'Sign In',
+        leading: const Icon(Icons.arrow_back),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppTheme.spacing6),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 32),
+              const SizedBox(height: AppTheme.spacing7),
               Text(
                 'Welcome Back',
-                style: Theme.of(context).textTheme.displaySmall,
+                style: AppTheme.textTheme.displaySmall?.copyWith(
+                  color: AppTheme.primaryColor,
+                ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.spacing3),
               Text(
-                'Sign in to your account',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                'Sign in to access your account',
+                style: AppTheme.textTheme.bodyMedium?.copyWith(
                   color: AppTheme.textSecondaryColor,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 40),
-              TextFormField(
+              const SizedBox(height: AppTheme.spacing7),
+              LuxeInput(
+                label: 'Email Address',
+                hint: 'your@email.com',
                 controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: const Icon(Icons.email_outlined),
-                  hintText: 'Enter your email',
-                ),
                 keyboardType: TextInputType.emailAddress,
+                prefixIcon: Icons.email_outlined,
                 validator: (value) {
                   if (value?.isEmpty ?? true) {
                     return 'Email is required';
@@ -97,27 +98,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
-              TextFormField(
+              const SizedBox(height: AppTheme.spacing6),
+              LuxeInput(
+                label: 'Password',
+                hint: '••••••••',
                 controller: _passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  prefixIcon: const Icon(Icons.lock_outlined),
-                  hintText: 'Enter your password',
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                  ),
-                ),
-                obscureText: _obscurePassword,
+                obscureText: true,
+                prefixIcon: Icons.lock_outlined,
+                suffixIcon: Icons.visibility,
                 validator: (value) {
                   if (value?.isEmpty ?? true) {
                     return 'Password is required';
@@ -128,35 +116,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: authState.isLoading ? null : _handleLogin,
-                child: authState.isLoading
-                    ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppTheme.backgroundColor,
-                    ),
-                  ),
-                )
-                    : const Text('Sign In'),
+              const SizedBox(height: AppTheme.spacing7),
+              LuxeButton(
+                label: authState.isLoading ? 'Signing In...' : 'Sign In',
+                isLoading: authState.isLoading,
+                onPressed: authState.isLoading ? () {} : _handleLogin,
+                variant: ButtonVariant.primary,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.spacing6),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     "Don't have an account? ",
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: AppTheme.textTheme.bodyMedium,
                   ),
                   GestureDetector(
                     onTap: () => context.push('/signup'),
                     child: Text(
                       'Sign Up',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      style: AppTheme.textTheme.bodyMedium?.copyWith(
                         color: AppTheme.primaryColor,
                         fontWeight: FontWeight.bold,
                       ),

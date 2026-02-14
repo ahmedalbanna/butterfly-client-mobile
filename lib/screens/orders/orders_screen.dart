@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../config/theme.dart';
 import '../../models/order.dart';
 import '../../services/order_service.dart';
+import '../../widgets/custom/index.dart';
 
 class OrdersScreen extends ConsumerStatefulWidget {
   const OrdersScreen({Key? key}) : super(key: key);
@@ -27,9 +28,10 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     final ordersAsync = ref.watch(ordersProvider(_params));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Orders'),
-        elevation: 0,
+      appBar: LuxeAppBar(
+        title: 'My Orders',
+        leading: const Icon(Icons.arrow_back),
+        showDivider: true,
       ),
       body: ordersAsync.when(
         data: (response) {
@@ -38,20 +40,26 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.receipt_outlined,
                     size: 64,
                     color: AppTheme.textSecondaryColor,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppTheme.spacing4),
                   Text(
                     'No orders yet',
-                    style: Theme.of(context).textTheme.headlineSmall,
+                    style: AppTheme.textTheme.headlineSmall,
                   ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
+                  const SizedBox(height: AppTheme.spacing3),
+                  Text(
+                    'Start shopping to create your first order',
+                    style: AppTheme.textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: AppTheme.spacing6),
+                  LuxeButton(
+                    label: 'Start Shopping',
                     onPressed: () => context.go('/products'),
-                    child: const Text('Start Shopping'),
+                    variant: ButtonVariant.primary,
                   ),
                 ],
               ),
@@ -59,9 +67,9 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppTheme.spacing4),
             itemCount: response.data.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            separatorBuilder: (_, __) => const SizedBox(height: AppTheme.spacing3),
             itemBuilder: (context, index) {
               final order = response.data[index];
               return OrderCard(order: order);
@@ -69,25 +77,35 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           );
         },
         loading: () => const Center(
-          child: CircularProgressIndicator(),
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              AppTheme.primaryColor,
+            ),
+          ),
         ),
         error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.error_outline,
                 size: 64,
                 color: AppTheme.errorColor,
               ),
               const SizedBox(height: 16),
-              Text('Error: $error'),
-              const SizedBox(height: 24),
-              ElevatedButton(
+              Text(
+               'Error loading orders',
+               style: AppTheme.textTheme.bodySmall?.copyWith(
+                 color: AppTheme.errorColor,
+               ),
+             ),
+              const SizedBox(height: AppTheme.spacing6),
+              LuxeButton(
+                label: 'Retry',
                 onPressed: () {
                   setState(() {});
                 },
-                child: const Text('Retry'),
+                variant: ButtonVariant.primary,
               ),
             ],
           ),
@@ -126,74 +144,78 @@ class OrderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => context.push('/orders/${order.id}'),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Order #${order.id.substring(0, 8)}',
-                        style: Theme.of(context).textTheme.labelLarge,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        DateFormat('MMM dd, yyyy').format(order.createdAt!),
-                        style: Theme.of(context).textTheme.bodySmall,
+      child: LuxeCard(
+        padding: const EdgeInsets.all(AppTheme.spacing4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Order #${order.id.substring(0, 8)}',
+                      style: AppTheme.textTheme.labelLarge,
+                    ),
+                    const SizedBox(height: AppTheme.spacing1),
+                    Text(
+                      DateFormat('MMM dd, yyyy').format(order.createdAt!),
+                      style: AppTheme.textTheme.bodySmall,
                       ),
                     ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacing3,
+                    vertical: AppTheme.spacing1,
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(order.status).withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      order.statusDisplay,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: _getStatusColor(order.status),
-                        fontWeight: FontWeight.bold,
-                      ),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(order.status).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                    border: Border.all(
+                      color: _getStatusColor(order.status),
+                      width: 0.5,
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              const Divider(),
-              const SizedBox(height: 12),
-              Text(
-                '${order.items.length} item(s)',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Total',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  Text(
-                    '\$${order.total.toStringAsFixed(2)}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.primaryColor,
-                      fontWeight: FontWeight.bold,
+                  child: Text(
+                    order.statusDisplay,
+                    style: AppTheme.textTheme.labelSmall?.copyWith(
+                      color: _getStatusColor(order.status),
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppTheme.spacing3),
+            Divider(
+              color: AppTheme.dividerColor,
+              height: AppTheme.spacing4,
+            ),
+            const SizedBox(height: AppTheme.spacing3),
+            Text(
+              '${order.items.length} item(s)',
+              style: AppTheme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: AppTheme.spacing3),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Total',
+                  style: AppTheme.textTheme.bodyMedium,
+                ),
+                Text(
+                  '\$${order.total.toStringAsFixed(2)}',
+                  style: AppTheme.textTheme.bodyMedium?.copyWith(
+                    color: AppTheme.primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
