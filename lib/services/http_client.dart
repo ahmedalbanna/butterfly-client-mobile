@@ -7,6 +7,8 @@ class HttpClient {
   late final Dio _dio;
   final FlutterSecureStorage _secureStorage;
   final Logger _logger = Logger();
+  bool _isRefreshing = false;
+  final List<Function> _pendingRequests = [];
 
   HttpClient({FlutterSecureStorage? secureStorage})
       : _secureStorage = secureStorage ?? const FlutterSecureStorage() {
@@ -37,12 +39,15 @@ class HttpClient {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
+    // Add auth token to headers
     final token = await getAccessToken();
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
+      _logger.d('→ ${options.method} ${options.path} [AUTH]');
+    } else {
+      _logger.d('→ ${options.method} ${options.path} [NO TOKEN]');
     }
 
-    _logger.d('→ ${options.method} ${options.path}');
     return handler.next(options);
   }
 
@@ -60,72 +65,130 @@ class HttpClient {
   ) async {
     _logger.e('✗ Error: ${error.message}');
 
+    // Handle 401 - try to refresh token
     if (error.response?.statusCode == 401) {
-      // Attempt to refresh token
+      final refreshToken = await getRefreshToken();
+      
+      // No refresh token available, proceed with error
+      if (refreshToken == null) {
+        _logger.w('No refresh token available, cannot refresh');
+        return handler.next(error);
+      }
+
+      // If already refreshing, queue this request
+      if (_isRefreshing) {
+        _logger.d('Token refresh in progress, queuing request');
+        return _queueRequest(() async {
+          return _retryRequest(error.requestOptions, handler);
+        });
+      }
+
+      // Start token refresh process
+      _isRefreshing = true;
+      _logger.i('Attempting to refresh access token');
+
       try {
-        final refreshToken = await getRefreshToken();
-        
-        if (refreshToken != null) {
-          _logger.i('Attempting to refresh access token');
+        // Call refresh endpoint
+        final response = await _dio.post<Map<String, dynamic>>(
+          '/auth/refresh',
+          data: {'refreshToken': refreshToken},
+        );
+
+        if (response.statusCode == 200 && response.data != null) {
+          final data = response.data!;
           
-          final refreshResponse = await _dio.post<Map<String, dynamic>>(
-            '/auth/refresh',
-            data: {'refreshToken': refreshToken},
-            options: Options(
-              headers: {'Authorization': 'Bearer $refreshToken'},
-            ),
-          );
-          
-          if (refreshResponse.statusCode == 200) {
-            final data = refreshResponse.data!;
-            if (data['success'] == true) {
-              final newAccessToken = data['accessToken'];
-              final newRefreshToken = data['refreshToken'];
-              
-              if (newAccessToken != null && newRefreshToken != null) {
-                // Save new tokens
-                await saveTokens(
-                  accessToken: newAccessToken,
-                  refreshToken: newRefreshToken,
-                );
-                
-                _logger.i('Token refreshed successfully');
-                
-                // Retry the original request with new token
-                final retryOptions = error.requestOptions;
-                retryOptions.headers['Authorization'] = 'Bearer $newAccessToken';
-                
-                try {
-                  final retryResponse = await _dio.request<dynamic>(
-                    retryOptions.path,
-                    options: Options(
-                      method: retryOptions.method,
-                      headers: retryOptions.headers,
-                    ),
-                    data: retryOptions.data,
-                    queryParameters: retryOptions.queryParameters,
-                  );
-                  return handler.resolve(retryResponse);
-                } catch (retryError) {
-                  _logger.e('Failed to retry request after token refresh: $retryError');
-                  return handler.next(error);
-                }
-              }
-            }
+          // Extract new tokens
+          final newAccessToken = data['accessToken'] as String?;
+          final newRefreshToken = data['refreshToken'] as String?;
+
+          if (newAccessToken != null && newRefreshToken != null) {
+            // Save new tokens
+            await saveTokens(
+              accessToken: newAccessToken,
+              refreshToken: newRefreshToken,
+            );
+            _logger.i('Token refresh successful');
+
+            // Retry original request with new token
+            final retryResponse = await _retryRequest(
+              error.requestOptions,
+              handler,
+            );
+
+            // Process all pending requests
+            _processPendingRequests();
+            
+            return retryResponse;
           }
         }
-        
-        // If we get here, refresh failed - clear tokens and let 401 propagate
-        _logger.e('Token refresh failed, clearing stored tokens');
-        await clearTokens();
+
+        // Refresh failed - clear tokens and logout
+        _logger.e('Token refresh failed - invalid response');
+        await _handleRefreshFailure();
+        return handler.next(error);
       } catch (e) {
-        _logger.e('Error during token refresh: $e');
-        // Clear tokens on any error
-        await clearTokens();
+        _logger.e('Token refresh error: $e');
+        await _handleRefreshFailure();
+        return handler.next(error);
+      } finally {
+        _isRefreshing = false;
       }
     }
 
     return handler.next(error);
+  }
+
+  /// Queue a request while token refresh is in progress
+  Future<void> _queueRequest(Function request) async {
+    _pendingRequests.add(request);
+  }
+
+  /// Process all pending requests after token refresh
+  void _processPendingRequests() {
+    for (final request in _pendingRequests) {
+      request();
+    }
+    _pendingRequests.clear();
+  }
+
+  /// Retry a request with new token
+  Future<dynamic> _retryRequest(
+    RequestOptions requestOptions,
+    ErrorInterceptorHandler handler,
+  ) async {
+    try {
+      final token = await getAccessToken();
+      if (token == null) {
+        throw Exception('No access token available for retry');
+      }
+
+      final retryOptions = Options(
+        method: requestOptions.method,
+        headers: {
+          ...requestOptions.headers,
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final response = await _dio.request<dynamic>(
+        requestOptions.path,
+        data: requestOptions.data,
+        queryParameters: requestOptions.queryParameters,
+        options: retryOptions,
+      );
+
+      return handler.resolve(response);
+    } catch (e) {
+      _logger.e('Failed to retry request: $e');
+      rethrow;
+    }
+  }
+
+  /// Handle refresh token failure
+  Future<void> _handleRefreshFailure() async {
+    _logger.w('Clearing tokens due to refresh failure');
+    await clearTokens();
+    _pendingRequests.clear();
   }
 
   Future<Response<T>> get<T>(
@@ -208,13 +271,40 @@ class HttpClient {
     required String accessToken,
     required String refreshToken,
   }) async {
-    await Future.wait([
-      _secureStorage.write(key: AppConfig.tokenStorageKey, value: accessToken),
-      _secureStorage.write(
-        key: AppConfig.refreshTokenStorageKey,
-        value: refreshToken,
-      ),
-    ]);
+    try {
+      _logger.i('Saving tokens to secure storage...');
+      _logger.d('Access token length: ${accessToken.length}');
+      _logger.d('Refresh token length: ${refreshToken.length}');
+      
+      await Future.wait([
+        _secureStorage.write(key: AppConfig.tokenStorageKey, value: accessToken),
+        _secureStorage.write(
+          key: AppConfig.refreshTokenStorageKey,
+          value: refreshToken,
+        ),
+      ]);
+      
+      _logger.i('✓ Tokens saved successfully');
+      
+      // Skip verification on web platform due to flutter_secure_storage_web limitations
+      // The read operation after write can throw OperationError in some browsers
+      // Tokens are actually saved, but verification fails
+      // See: https://github.com/mogol/flutter_secure_storage/issues/161
+      /*
+      // Verify tokens were saved
+      final verifyAccess = await _secureStorage.read(key: AppConfig.tokenStorageKey);
+      final verifyRefresh = await _secureStorage.read(key: AppConfig.refreshTokenStorageKey);
+      
+      if (verifyAccess != null && verifyRefresh != null) {
+        _logger.i('✓ Token storage verification: OK');
+      } else {
+        _logger.e('✗ Token storage verification failed - tokens not found after save');
+      }
+      */
+    } catch (e) {
+      _logger.e('Error saving tokens: $e');
+      rethrow;
+    }
   }
 
   Future<void> clearTokens() async {

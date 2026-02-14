@@ -16,7 +16,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
 
   return GoRouter(
-    initialLocation: authState.isLoading ? '/' : (authState.user != null ? '/dashboard' : '/login'),
+    initialLocation: '/',
     redirect: (context, state) {
       final isLoading = authState.isLoading;
       final hasUser = authState.user != null;
@@ -41,6 +41,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      // Root route for initial navigation
+      GoRoute(
+        path: '/',
+        redirect: (context, state) => null, // Handled by global redirect
+      ),
       GoRoute(
         path: '/login',
         name: 'login',
