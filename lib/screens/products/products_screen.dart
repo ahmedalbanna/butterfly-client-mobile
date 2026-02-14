@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../services/product_service.dart';
+import '../../services/auth_service.dart';
 
 class ProductsScreen extends ConsumerStatefulWidget {
   const ProductsScreen({Key? key}) : super(key: key);
@@ -177,7 +178,9 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                       DataColumn(label: Text('Category')),
                       DataColumn(label: Text('Actions')),
                     ],
-                    rows: response.data.map((product) {
+                    rows: (response.data as List<dynamic>)
+                        .cast<AdminProduct>()
+                        .map((product) {
                       return DataRow(
                         cells: [
                           DataCell(

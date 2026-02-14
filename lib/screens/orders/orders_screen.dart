@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../services/order_service.dart';
+import '../../services/auth_service.dart';
 
 class OrdersScreen extends ConsumerStatefulWidget {
   const OrdersScreen({Key? key}) : super(key: key);

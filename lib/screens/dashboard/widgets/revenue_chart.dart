@@ -160,7 +160,9 @@ class RevenueChart extends StatelessWidget {
       revenue.total,
     ];
     final max = values.reduce((a, b) => a > b ? a : b);
-    return (max * 1.2).ceilToDouble(); // Add 20% padding
+    // Ensure minimum value of 100 to avoid division by zero in grid
+    final maxWithPadding = (max * 1.2).ceilToDouble();
+    return maxWithPadding > 0 ? maxWithPadding : 100;
   }
 
   BarChartGroupData _makeGroupData(int x, double y, Color color) {
