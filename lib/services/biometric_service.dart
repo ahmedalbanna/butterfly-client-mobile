@@ -211,6 +211,3 @@ class BiometricService {
     }
   }
 }
-
-// Import for PlatformException
-import 'package:flutter/services.dart';

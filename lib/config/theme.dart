@@ -140,7 +140,7 @@ class AppTheme {
       labelStyle: textTheme.bodyMedium,
       hintStyle: textTheme.bodySmall,
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: surfaceColor,
       elevation: 4,
       shape: RoundedRectangleBorder(

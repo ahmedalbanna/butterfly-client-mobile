@@ -259,5 +259,3 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-// Import for BiometricType
-import 'package:local_auth/local_auth.dart';
