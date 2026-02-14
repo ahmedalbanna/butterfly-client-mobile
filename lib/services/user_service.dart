@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'http_client.dart';
+import 'auth_service.dart';
 
 final logger = Logger();
 
@@ -10,7 +11,6 @@ class AdminUser {
   final String email;
   final String? name;
   final bool isAdmin;
-  final bool isLegacyFirebaseUser;
   final DateTime createdAt;
   final DateTime updatedAt;
   final int orderCount;
@@ -20,7 +20,6 @@ class AdminUser {
     required this.email,
     this.name,
     required this.isAdmin,
-    required this.isLegacyFirebaseUser,
     required this.createdAt,
     required this.updatedAt,
     required this.orderCount,
@@ -32,7 +31,6 @@ class AdminUser {
       email: json['email'] as String,
       name: json['name'] as String?,
       isAdmin: json['isAdmin'] as bool? ?? false,
-      isLegacyFirebaseUser: json['isLegacyFirebaseUser'] as bool? ?? false,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       orderCount: json['_count']?['orders'] as int? ?? 0,
@@ -52,7 +50,6 @@ class UserDetail extends AdminUser {
     required super.email,
     super.name,
     required super.isAdmin,
-    required super.isLegacyFirebaseUser,
     required super.createdAt,
     required super.updatedAt,
     required super.orderCount,
@@ -67,7 +64,6 @@ class UserDetail extends AdminUser {
       email: baseUser.email,
       name: baseUser.name,
       isAdmin: baseUser.isAdmin,
-      isLegacyFirebaseUser: baseUser.isLegacyFirebaseUser,
       createdAt: baseUser.createdAt,
       updatedAt: baseUser.updatedAt,
       orderCount: baseUser.orderCount,
@@ -339,7 +335,7 @@ class UserService {
 
 /// Provider for UserService
 final userServiceProvider = Provider<UserService>((ref) {
-  final httpClient = HttpClient();
+  final httpClient = ref.watch(httpClientProvider);
   return UserService(httpClient);
 });
 

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:logger/logger.dart';
 import 'http_client.dart';
+import 'auth_service.dart';
 
 final logger = Logger();
 
@@ -106,6 +107,6 @@ class UploadService {
 
 /// Provider for UploadService
 final uploadServiceProvider = Provider<UploadService>((ref) {
-  final httpClient = HttpClient();
+  final httpClient = ref.watch(httpClientProvider);
   return UploadService(httpClient);
 });

@@ -30,6 +30,9 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   bool _isLoading = false;
   bool _isUploading = false;
   File? _selectedImageFile;
+  List<String> _additionalImages = [];
+  List<String> _modelImages = [];
+  bool _isUploadingAdditional = false;
 
   @override
   void initState() {
@@ -55,6 +58,8 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       _careController.text = product.care ?? '';
       _selectedCategoryId = product.categoryId;
       _featured = product.featured;
+      _additionalImages = List<String>.from(product.images);
+      _modelImages = List<String>.from(product.modelImages);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -132,6 +137,76 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     }
   }
 
+  Future<void> _pickAdditionalImage() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+
+      if (image != null) {
+        await _uploadAdditionalImage(File(image.path));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to pick image: ${e.toString()}'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadAdditionalImage(File imageFile) async {
+    try {
+      setState(() => _isUploadingAdditional = true);
+
+      final uploadService = ref.read(uploadServiceProvider);
+      final result = await uploadService.uploadImage(imageFile);
+
+      setState(() {
+        _additionalImages.add(result.url);
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Additional image uploaded successfully'),
+            backgroundColor: AppTheme.successColor,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to upload image: ${e.toString()}'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isUploadingAdditional = false);
+    }
+  }
+
+  void _removeAdditionalImage(int index) {
+    setState(() {
+      _additionalImages.removeAt(index);
+    });
+  }
+
+  void _removeModelImage(int index) {
+    setState(() {
+      _modelImages.removeAt(index);
+    });
+  }
+
   Future<void> _handleSubmit() async {
     if (_formKey.currentState!.validate() && _selectedCategoryId != null) {
       try {
@@ -146,6 +221,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
             price: double.parse(_priceController.text),
             stock: int.parse(_stockController.text),
             image: _imageController.text,
+            images: _additionalImages,
             materials: _materialsController.text,
             care: _careController.text,
             featured: _featured,
@@ -160,6 +236,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
             price: double.parse(_priceController.text),
             stock: int.parse(_stockController.text),
             image: _imageController.text,
+            images: _additionalImages,
             materials: _materialsController.text,
             care: _careController.text,
             featured: _featured,
@@ -377,6 +454,189 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                   ],
                 ],
               ),
+              const SizedBox(height: 24),
+              
+              // Additional Images Section
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Additional Images',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _isUploadingAdditional ? null : _pickAdditionalImage,
+                            icon: _isUploadingAdditional
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const Icon(Icons.add_photo_alternate),
+                            label: Text(_isUploadingAdditional ? 'Uploading...' : 'Add Image'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      if (_additionalImages.isEmpty)
+                        Container(
+                          padding: const EdgeInsets.all(32),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Center(
+                            child: Column(
+                              children: [
+                                Icon(Icons.photo_library, size: 48, color: Colors.grey.shade400),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'No additional images yet',
+                                  style: TextStyle(color: Colors.grey.shade600),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      else
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: _additionalImages.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final imageUrl = entry.value;
+                            return Stack(
+                              children: [
+                                Container(
+                                  width: 120,
+                                  height: 120,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey.shade300),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(
+                                      imageUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          color: Colors.grey.shade200,
+                                          child: const Icon(Icons.broken_image),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 4,
+                                  right: 4,
+                                  child: InkWell(
+                                    onTap: () => _removeAdditionalImage(index),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.errorColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.close,
+                                        color: Colors.white,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Model Images Section (Read-only display)
+              if (_modelImages.isNotEmpty)
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'AI-Generated Model Images',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'AI Generated',
+                                style: TextStyle(
+                                  color: AppTheme.primaryColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: _modelImages.asMap().entries.map((entry) {
+                            final imageUrl = entry.value;
+                            return Container(
+                              width: 120,
+                              height: 120,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: Colors.grey.shade200,
+                                      child: const Icon(Icons.broken_image),
+                                    );
+                                  },
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              
               const SizedBox(height: 16),
               // Dynamic category dropdown
               Consumer(

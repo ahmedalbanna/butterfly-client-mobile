@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'http_client.dart';
+import 'auth_service.dart';
 
 final logger = Logger();
 
@@ -250,7 +251,7 @@ class AnalyticsService {
 
 /// Provider for AnalyticsService
 final analyticsServiceProvider = Provider<AnalyticsService>((ref) {
-  final httpClient = HttpClient();
+  final httpClient = ref.watch(httpClientProvider);
   return AnalyticsService(httpClient);
 });
 

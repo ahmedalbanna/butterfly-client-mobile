@@ -166,6 +166,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                         scrollDirection: Axis.vertical,
                         child: DataTable(
                     columns: const [
+                      DataColumn(label: Text('Image')),
                       DataColumn(label: Text('Name')),
                       DataColumn(label: Text('Price')),
                       DataColumn(label: Text('Stock')),
@@ -175,6 +176,55 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                     rows: response.data.map((product) {
                       return DataRow(
                         cells: [
+                          DataCell(
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: Stack(
+                                  children: [
+                                    Image.network(
+                                      product.image,
+                                      fit: BoxFit.cover,
+                                      width: 50,
+                                      height: 50,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          color: Colors.grey.shade200,
+                                          child: const Icon(Icons.broken_image, size: 20),
+                                        );
+                                      },
+                                    ),
+                                    if (product.images.isNotEmpty)
+                                      Positioned(
+                                        bottom: 2,
+                                        right: 2,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withOpacity(0.7),
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            '+${product.images.length}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                           DataCell(
                             SizedBox(
                               width: 200,

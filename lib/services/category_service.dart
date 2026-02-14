@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'http_client.dart';
+import 'auth_service.dart';
 
 final logger = Logger();
 
@@ -168,7 +169,7 @@ class CategoryService {
 
 /// Provider for CategoryService
 final categoryServiceProvider = Provider<CategoryService>((ref) {
-  final httpClient = HttpClient();
+  final httpClient = ref.watch(httpClientProvider);
   return CategoryService(httpClient);
 });
 

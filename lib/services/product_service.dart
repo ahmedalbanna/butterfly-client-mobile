@@ -246,6 +246,8 @@ class AdminProduct {
   final int stock;
   final String description;
   final String image;
+  final List<String> images;
+  final List<String> modelImages;
   final bool featured;
   final String categoryId;
   final AdminCategory category;
@@ -261,6 +263,8 @@ class AdminProduct {
     required this.stock,
     required this.description,
     required this.image,
+    this.images = const [],
+    this.modelImages = const [],
     required this.featured,
     required this.categoryId,
     required this.category,
@@ -278,6 +282,12 @@ class AdminProduct {
       stock: json['stock'],
       description: json['description'],
       image: json['image'],
+      images: json['images'] != null 
+          ? List<String>.from(json['images'])
+          : [],
+      modelImages: json['modelImages'] != null
+          ? List<String>.from(json['modelImages'])
+          : [],
       featured: json['featured'] ?? false,
       categoryId: json['categoryId'],
       category: AdminCategory.fromJson(json['category']),
