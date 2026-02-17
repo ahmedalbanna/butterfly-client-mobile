@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../services/cart_service.dart';
 import '../../services/order_service.dart';
+import '../../services/auth_service.dart';
 import '../../widgets/custom/index.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
@@ -36,9 +37,25 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final customerAddress =
           '${_addressController.text}, ${_cityController.text}, ${_stateController.text} ${_zipController.text}';
 
+      // Get current user data
+      final authState = ref.read(authStateProvider);
+      final user = authState.user;
+
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('You must be logged in to checkout'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+        return;
+      }
+
       try {
         await ref.read(checkoutNotifierProvider.notifier).checkout(
           customerAddress: customerAddress,
+          customerEmail: user.email,
+          customerName: user.name ?? user.email.split('@')[0],
           paymentMethod: _paymentMethod,
         );
 

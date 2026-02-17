@@ -82,15 +82,21 @@ class OrderService {
   /// Create a new order
   Future<Order> createOrder({
     required String customerAddress,
+    required String customerEmail,
+    required String customerName,
+    String? customerPhone,
     String paymentMethod = 'credit_card',
   }) async {
     try {
-      _logger.i('Creating order - Address: $customerAddress');
+      _logger.i('Creating order - Address: $customerAddress, Name: $customerName');
 
       final response = await _httpClient.post<Map<String, dynamic>>(
         '/orders',
         data: {
           'customerAddress': customerAddress,
+          'customerEmail': customerEmail,
+          'customerName': customerName,
+          'customerPhone': customerPhone,
           'paymentMethod': paymentMethod,
         },
       );
@@ -223,12 +229,18 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
 
   Future<void> checkout({
     required String customerAddress,
+    required String customerEmail,
+    required String customerName,
+    String? customerPhone,
     String paymentMethod = 'credit_card',
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final order = await _orderService.createOrder(
         customerAddress: customerAddress,
+        customerEmail: customerEmail,
+        customerName: customerName,
+        customerPhone: customerPhone,
         paymentMethod: paymentMethod,
       );
       state = CheckoutState(order: order);
